@@ -1,28 +1,33 @@
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/auth';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
+import firebase from "firebase/compat/app";
+import "firebase/compat/auth";
 
-import initFirebase from '../config';
+import initFirebase from "../config";
 import {
   removeUserCookie,
   setUserCookie,
-  getUserFromCookie
-} from './userCookie';
+  getUserFromCookie,
+} from "./userCookie";
 
 initFirebase();
 
-export const mapUserData = async user => {
+export const mapUserData = async (user) => {
   const { uid, email } = user;
-  const token = await user.getIdToken(true);
+  let token = user?.multiFactor?.user?.accessToken;
+  let exp = user?.multiFactor?.user?.stsTokenManager?.expirationTime;
+
+  if (Date.now() >= exp) {
+    console.log("gonna expire");
+    token = await user.getIdToken(true);
+  }
   return {
     id: uid,
     email,
-    token
+    token: token,
   };
 };
 
-  
 const useUser = () => {
   const [user, setUser] = useState();
   const router = useRouter();
@@ -32,9 +37,9 @@ const useUser = () => {
       .auth()
       .signOut()
       .then(() => {
-        router.push('/');
+        router.push("/");
       })
-      .catch(e => {
+      .catch((e) => {
         console.error(e);
       });
   };
@@ -42,7 +47,7 @@ const useUser = () => {
   useEffect(() => {
     const cancelAuthListener = firebase
       .auth()
-      .onIdTokenChanged(async userToken => {
+      .onIdTokenChanged(async (userToken) => {
         if (userToken) {
           const userData = await mapUserData(userToken);
           setUserCookie(userData);
