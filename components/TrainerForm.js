@@ -34,7 +34,7 @@ export default function TrainerForm({
       >
         <Button
             disabled={!isSubmitEnabled}
-            variant="outlined"
+            variant="contained"
             onClick={onSubmit}
             sx={{ mt: 1, mr: 1 }}
         >

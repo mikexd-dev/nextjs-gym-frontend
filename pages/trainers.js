@@ -200,9 +200,7 @@ const Trainers = () => {
                 >
                   New Trainer
                 </Typography>
-                <Button onClick={toggleDrawer(
-                  
-                )}>
+                <Button onClick={toggleDrawer()}>
                   <MdClose size={40} />
                 </Button>
               </Stack>
