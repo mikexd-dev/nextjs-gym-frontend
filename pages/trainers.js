@@ -16,13 +16,9 @@ import Progress from "../components/Progress";
 import Snackbar from "../components/Snackbar";
 import { url } from "../urlConfig";
 import TrainerForm from "../components/TrainerForm";
+import DeleteWithPopper from "../components/DeleteWithPopper";
 
 const newTrainerInitialState = { name: "", expertise: "" }
-
-const columns = [
-  { field: "name", headerName: "Name", width: 220 },
-  { field: "expertise", headerName: "Expertise", width: 280 }
-]
 
 const Trainers = () => {
   const { user } = useUser();
@@ -30,11 +26,14 @@ const Trainers = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isDrawerOpen, setDrawerOpen] = useState(false);
   const [isSnackbarOpen, setSnackbarOpen] = useState(false);
+  const [isPopperOpen, setPopperOpen] = useState(false);
   const [isSubmitEnabled, setIsSubmitEnabled] = useState(false);
   const [snackbar, setSnackbar] = useState({ message: "", severity: "" });
   const [trainers, setTrainers] = useState([]);
   const [newTrainer, setNewTrainer] = useState(newTrainerInitialState);
+  const [selectedTrainerId, setSelectedTrainerId] = useState("");
   const [jwtToken, setJwtToken] = useState();
+  const [anchorEl, setAnchorEl] = useState(null);
 
   useEffect(() => {
     const handleRouteChange = (url, { shallow }) => {
@@ -132,15 +131,70 @@ const Trainers = () => {
     }
     const trainerCreated = await response.json();
     openSnackBar(trainerCreated);
-    return trainerCreated; 
   }
   
   const handleAddNewTrainer = async () => {
-      await createNewTrainer(newTrainer);
-      setDrawerOpen(false);
-      setNewTrainer(newTrainerInitialState);
-      await fetchTrainers(jwtToken);
+    await createNewTrainer(newTrainer);
+    setDrawerOpen(false);
+    setNewTrainer(newTrainerInitialState);
+    await fetchTrainers(jwtToken);
   }
+  
+  const closePopper = () => {
+    setPopperOpen(false);
+  }
+
+  const deleteTrainer = async () => {
+    const response = await fetch(`${url}/trainers/${selectedTrainerId}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${jwtToken}`,
+        "Content-Type": "application/json",
+      }
+    });
+    setSelectedTrainerId("");
+    if (!response.ok) {
+      const error = await response.json();
+      openSnackBar(error);
+      return;
+    }
+    const trainerDeleted = await response.json();
+    openSnackBar(trainerDeleted);
+    closePopper();
+    await fetchTrainers(jwtToken);
+  }
+
+  const handleDeleteTrainer = (id) => (event) => {
+    setSelectedTrainerId(id);
+    setAnchorEl(event.currentTarget);
+    setPopperOpen(true);
+  };
+
+  const columns = [
+    { field: "index", headerName: "Index", width: 220 },
+    { field: "name", headerName: "Name", width: 220 },
+    { field: "expertise", headerName: "Expertise", width: 280 },
+    {
+      field: 'actions',
+      type: 'actions',
+      headerName: 'Actions',
+      width: 100,
+      cellClassName: 'actions',
+      getActions: ({ id }) => {
+        return [
+          <DeleteWithPopper
+            isPopperOpen={isPopperOpen}
+            popperAnchorEl={anchorEl}
+            popperPlacement="top"
+            popperLabel="Confirm delete?"
+            onClose={closePopper}
+            onConfirm={deleteTrainer}
+            onClick={handleDeleteTrainer(id)}
+          />
+        ];
+      },
+    }
+  ]
 
   return (
     <div>
@@ -153,7 +207,7 @@ const Trainers = () => {
       <Progress open={isLoading} />
       {user?.email && (
         <Drawer> 
-         <Stack
+          <Stack
             direction="row"
             spacing={20}
             justifyContent="space-between"
@@ -173,7 +227,6 @@ const Trainers = () => {
               New Trainer
             </Button>
           </Stack>
-
           <Backdrop toggleDrawer={toggleDrawer} isOpen={isDrawerOpen}>
             <Box
               sx={{
@@ -213,7 +266,10 @@ const Trainers = () => {
               />
             </Box>
           </Backdrop>
-          <DataTable data={trainers} columns={columns} />
+          <DataTable 
+            data={trainers.map((trainer, index) => ({...trainer, index: index + 1}))} 
+            columns={columns} 
+          />
         </Drawer>
       )}
     </div>
