@@ -7,6 +7,7 @@ import TextField from "./Input";
 export default function TrainerForm({
     isSubmitEnabled,
     data,
+    buttonLabel,
     onChange,
     onSubmit
 }) {
@@ -48,7 +49,7 @@ export default function TrainerForm({
             onClick={onSubmit}
             sx={{ mt: 1, mr: 1 }}
           >
-            Submit
+            {buttonLabel}
           </Button>
         </Stack>
       </Stack> 

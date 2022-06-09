@@ -1,24 +1,24 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
+import IconButton from "@mui/material/IconButton";
 import Stack from "@mui/material/Stack";
+import Tooltip from '@mui/material/Tooltip';
 import Typography from "@mui/material/Typography";
-import { MdClose } from "react-icons/md";
+import { MdEdit } from "react-icons/md";
 
 import withAuth from "../auth/withAuth";
 import { useUser } from "../auth/useUser";
 import { getUserFromCookie } from "../auth/userCookie";
-import Backdrop from "../components/Backdrop";
 import DataTable from "../components/DataTable";
+import DeleteWithPopper from "../components/DeleteWithPopper";
 import Drawer from "../components/Drawer";
 import Progress from "../components/Progress";
 import Snackbar from "../components/Snackbar";
+import TrainerDrawer from "../components/TrainerDrawer";
 import { url } from "../urlConfig";
-import TrainerForm from "../components/TrainerForm";
-import DeleteWithPopper from "../components/DeleteWithPopper";
 
-const newTrainerInitialState = { name: "", expertise: "" }
+const trainerFormDataInitialState = { name: "", expertise: "" }
 
 const Trainers = () => {
   const { user } = useUser();
@@ -30,7 +30,7 @@ const Trainers = () => {
   const [isSubmitEnabled, setIsSubmitEnabled] = useState(false);
   const [snackbar, setSnackbar] = useState({ message: "", severity: "" });
   const [trainers, setTrainers] = useState([]);
-  const [newTrainer, setNewTrainer] = useState(newTrainerInitialState);
+  const [trainerFormData, setTrainerFormData] = useState(trainerFormDataInitialState);
   const [selectedTrainerId, setSelectedTrainerId] = useState("");
   const [jwtToken, setJwtToken] = useState();
   const [anchorEl, setAnchorEl] = useState(null);
@@ -87,18 +87,6 @@ const Trainers = () => {
     setIsLoading(false);
   }, [fetchTrainers]);
 
-  const toggleDrawer = () => (event) => {
-    if (
-      event.type === "keydown" &&
-      (event.key === "Tab" || event.key === "Shift")
-    ) {
-      return;
-    }
-
-    setDrawerOpen(!isDrawerOpen);
-  };
-
-
   const handleCloseSnackbar = (event, reason) => {
     if (reason === "clickaway") {
       return;
@@ -107,10 +95,15 @@ const Trainers = () => {
     setSnackbarOpen(false);
   };
 
+  const handleCloseDrawer = () => {
+    setDrawerOpen(false);
+    setTrainerFormData(trainerFormDataInitialState);
+  }
+
   const handleTrainerFormChange = (property) => (e) => {
-    const newTrainerValue = {...newTrainer, [property]: e.target.value}
-    setNewTrainer(newTrainerValue)
-    const isAllFilled = !!newTrainerValue.name && !!newTrainerValue.expertise
+    const trainerData = {...trainerFormData, [property]: e.target.value}
+    setTrainerFormData(trainerData)
+    const isAllFilled = !!trainerData.name && !!trainerData.expertise
     setIsSubmitEnabled(isAllFilled);
   }
 
@@ -126,7 +119,7 @@ const Trainers = () => {
     if (!response.ok) {
       const error = await response.json();
       openSnackBar(error);
-      setNewTrainer(newTrainerInitialState);
+      setTrainerFormData(trainerFormDataInitialState);
       return;
     }
     const trainerCreated = await response.json();
@@ -134,12 +127,12 @@ const Trainers = () => {
   }
   
   const handleAddNewTrainer = async () => {
-    await createNewTrainer(newTrainer);
+    await createNewTrainer(trainerFormData);
     setDrawerOpen(false);
-    setNewTrainer(newTrainerInitialState);
+    setTrainerFormData(trainerFormDataInitialState);
     await fetchTrainers(jwtToken);
   }
-  
+
   const closePopper = () => {
     setPopperOpen(false);
   }
@@ -170,6 +163,40 @@ const Trainers = () => {
     setPopperOpen(true);
   };
 
+  const updateTrainer = async (body) => {
+    const response = await fetch(`${url}/trainers/${trainerFormData.id}`, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${jwtToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      openSnackBar(error);
+      setTrainerFormData(trainerFormDataInitialState);
+      return;
+    }
+    const trainerUpdated = await response.json();
+    openSnackBar(trainerUpdated);
+  }
+
+  const handleUpdateTrainer = async () => {
+    await updateTrainer(trainerFormData)
+    setDrawerOpen(false);
+    setTrainerFormData(trainerFormDataInitialState)
+    await fetchTrainers(jwtToken);
+  }
+
+  const handleEditClick = (id) => () => {
+    const selectedTrainer = trainers.find(trainer => trainer.id === id)
+    setTrainerFormData(selectedTrainer);
+    const isAllFilled = !!selectedTrainer.name && !!selectedTrainer.expertise
+    setIsSubmitEnabled(isAllFilled);
+    setDrawerOpen(true);
+  }
+
   const columns = [
     { field: "index", headerName: "Index", width: 220 },
     { field: "name", headerName: "Name", width: 220 },
@@ -190,7 +217,15 @@ const Trainers = () => {
             onClose={closePopper}
             onConfirm={deleteTrainer}
             onClick={handleDeleteTrainer(id)}
-          />
+          />,
+          <Tooltip title="Edit" placement="top">
+            <IconButton
+              aria-label="edit"
+              onClick={handleEditClick(id)}
+            >
+              <MdEdit />
+            </IconButton>
+          </Tooltip>
         ];
       },
     }
@@ -223,49 +258,21 @@ const Trainers = () => {
             >
               Trainers
             </Typography>
-            <Button variant="contained" onClick={toggleDrawer()}>
+            <Button variant="contained" onClick={()=>setDrawerOpen(true)}>
               New Trainer
             </Button>
           </Stack>
-          <Backdrop toggleDrawer={toggleDrawer} isOpen={isDrawerOpen}>
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                alignItems: "flex-start",
-                rowGap: "10px",
-              }}
-            >
-              <Stack
-                direction="row"
-                spacing={50}
-                justifyContent="space-between"
-                alignItems="center"
-                sx={{ width: "100%" }}
-              >
-                <Typography
-                  variant="h5"
-                  gutterBottom
-                  sx={{
-                    fontWeight: "bold",
-                  }}
-                >
-                  New Trainer
-                </Typography>
-                <Button onClick={toggleDrawer()}>
-                  <MdClose size={40} />
-                </Button>
-              </Stack>
-
-              <TrainerForm
-                data={newTrainer}
-                onChange={handleTrainerFormChange}
-                onSubmit={handleAddNewTrainer}
-                isSubmitEnabled={isSubmitEnabled}
-              />
-            </Box>
-          </Backdrop>
+          <TrainerDrawer
+            setDrawerOpen={setDrawerOpen}
+            isDrawerOpen={isDrawerOpen}
+            title={trainerFormData.id ? "Update Trainer" : "New Trainer"}
+            formData={trainerFormData}
+            submitButtonLabel={trainerFormData.id ? "Done" : "Submit"}
+            isSubmitEnabled={isSubmitEnabled}
+            onChange={handleTrainerFormChange}
+            onSubmit={trainerFormData.id ? handleUpdateTrainer : handleAddNewTrainer}
+            onDrawerClose={handleCloseDrawer}
+          />
           <DataTable 
             data={trainers.map((trainer, index) => ({...trainer, index: index + 1}))} 
             columns={columns} 
