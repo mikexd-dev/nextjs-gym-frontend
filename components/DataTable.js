@@ -9,7 +9,6 @@ export default function DataTable({ data, columns }) {
         columns={columns}
         pageSize={11}
         rowsPerPageOptions={[5]}
-        checkboxSelection
         components={{ Toolbar: GridToolbar }}
         componentsProps={{
           toolbar: {
