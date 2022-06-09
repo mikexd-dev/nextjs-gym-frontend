@@ -110,24 +110,32 @@ const Consultation = () => {
       openSnackBar(error);
     }
     let consultations = await response.json();
-
+    console.log(consultations, "consult");
     const rows = [];
     consultations.data.map((item) => {
-      const temp = {};
-      temp.id = item.id;
-      temp.dateCreated = item.dateCreated;
-      item.data.map((item1) => {
-        if (item1.key === "basicInfo") {
-          item1.questions.map((item2) => {
-            temp[item2.key] = item2.answer;
-          });
-        }
-        if (item1.key === "packageQuestions") {
-          item1.questions.map((item2) => {
-            temp[item2.key] = item2.answer;
-          });
-        }
-      });
+      const temp = {
+        id: item.id,
+        dateCreated: item.dateCreated,
+        email: item.basicInfo.email,
+        firstName: item.basicInfo.firstName,
+        lastName: item.basicInfo.lastName,
+        isRecurring: item.basicInfo.isRecurring.answer,
+        phone: item.basicInfo.phone,
+        isSignup: item.packageQuestions.isSignup,
+      };
+
+      // item.data.map((item1) => {
+      //   if (item1.key === "basicInfo") {
+      //     item1.questions.map((item2) => {
+      //       temp[item2.key] = item2.answer;
+      //     });
+      //   }
+      //   if (item1.key === "packageQuestions") {
+      //     item1.questions.map((item2) => {
+      //       temp[item2.key] = item2.answer;
+      //     });
+      //   }
+      // });
       rows.push(temp);
     });
     openSnackBar(consultations);
@@ -182,22 +190,26 @@ const Consultation = () => {
 
   const formulateStepperData = (onboard) => {
     onboard = onboard.data[0].data;
+    // onboard.push({
+    //   key: "preview",
+    //   label: "Preview",
+    //   data: {},
+    // });
     return onboard;
   };
 
   const handleChange = (value, index, position, otherAnswer) => {
     const stepperData = userData;
-    if (stepperData[index]?.questions[position]?.type === "time-select") {
-      stepperData[index].questions[position].answer = value;
-      setUserData([...stepperData]);
-    } else if (stepperData[index]?.questions[position]?.type === "toggle") {
-      stepperData[index].questions[position].answer = value;
-      setUserData([...stepperData]);
-    } else {
-      if (!otherAnswer) stepperData[index].questions[position].answer = value;
-      else stepperData[index].questions[position].answer2 = value;
-      setUserData([...stepperData]);
-    }
+    console.log(index, position, value, otherAnswer, stepperData);
+
+    if (!otherAnswer) {
+      if (stepperData[index]?.questions[position]?.type === "toggle") {
+        stepperData[index].questions[position].answer = value || false;
+      } else stepperData[index].questions[position].answer = value;
+    } else stepperData[index].questions[position].answer2 = value;
+
+    setUserData([...stepperData]);
+    // }
   };
 
   const handleLeadsChange = (value) => {
@@ -224,6 +236,16 @@ const Consultation = () => {
   };
 
   const createConsultation = async (body) => {
+    // console.log(
+    //   body,
+    //   "consult body",
+    //   body.consultationId,
+    //   body.dateCreated,
+    //   body.dateModified,
+    //   selectedLead?.id
+    // );
+
+    console.log(body, "consult requestBody");
     const response = await fetch(`${url}/consultation`, {
       method: "POST",
       headers: {
@@ -241,57 +263,51 @@ const Consultation = () => {
   };
 
   const createCustomer = async (body) => {
-    let reqBody = {
-      displayName: "",
-      email: "",
+    const reqBody = {
+      displayName: body.basicInfo.firstName,
+      email: body.basicInfo.email,
       password: body.consultationId,
       role: "customer",
       leadsId: body.leadsId,
       consultationId: body.consultationId,
       notes: "hello world",
+      bio: "wtf",
       contractData: {
-        startDate: new Date().toLocaleString("en-SG", {
-          timeZone: "Asia/Singapore",
-          hour12: false,
-        }),
-        purchasedDate: new Date().toLocaleString("en-SG", {
-          timeZone: "Asia/Singapore",
-          hour12: false,
-        }),
-        endDate: new Date().toLocaleString("en-SG", {
-          timeZone: "Asia/Singapore",
-          hour12: false,
-        }),
+        startDate: body.dateCreated,
+        purchasedDate: body.dateCreated,
+        endDate: body.dateCreated, // TODO
         addOnSessions: 0,
-        specialRequest: "vip guest c",
+        specialRequest: body.packageQuestions.specialRequests,
         paid: true,
         paymentMethod: "paynow",
+        packageId: body.packageQuestions.typeOfPackage,
       },
     };
-    body.data.map((item) => {
-      if (item.key === "basicInfo") {
-        item.questions.map((item2) => {
-          if (item2.key === "firstName") {
-            reqBody.displayName = selectedLead.firstName;
-          }
-          if (item2.key === "email") {
-            reqBody.email = item2.answer;
-          }
-        });
-      }
-      if (item.key === "packageQuestions") {
-        item.questions.map((item2) => {
-          if (item2.key === "typeOfPackage") {
-            reqBody.contractData.packageId = item2.answer;
-          }
-        });
-      }
-      item.questions.map((item2) => {
-        if (item2.defaultValue) {
-          item2.answer = item2.defaultValue;
-        }
-      });
-    });
+    console.log(reqBody, "for customers");
+    // body.data.map((item) => {
+    //   if (item.key === "basicInfo") {
+    //     item.questions.map((item2) => {
+    //       if (item2.key === "firstName") {
+    //         reqBody.displayName = selectedLead.firstName;
+    //       }
+    //       if (item2.key === "email") {
+    //         reqBody.email = item2.answer;
+    //       }
+    //     });
+    //   }
+    //   if (item.key === "packageQuestions") {
+    //     item.questions.map((item2) => {
+    //       if (item2.key === "typeOfPackage") {
+    //         reqBody.contractData.packageId = item2.answer;
+    //       }
+    //     });
+    //   }
+    //   item.questions.map((item2) => {
+    //     if (item2.defaultValue) {
+    //       item2.answer = item2.defaultValue;
+    //     }
+    //   });
+    // });
     const response = await fetch(`${url}/customers`, {
       method: "POST",
       headers: {
@@ -311,19 +327,37 @@ const Consultation = () => {
 
   const submitResult = async () => {
     setLoading(true);
-    const requestBody = { data: userData };
-    (requestBody.dateCreated = new Date().toLocaleString("en-SG", {
+    console.log(userData, "userData");
+
+    // request body
+    const date = new Date().toLocaleString("en-SG", {
       timeZone: "Asia/Singapore",
       hour12: false,
-    })),
-      (requestBody.dateModified = new Date().toLocaleString("en-SG", {
-        timeZone: "Asia/Singapore",
-        hour12: false,
-      }));
+    });
+    const requestBody = {
+      dateCreated: date,
+      dateModified: date,
+      leadsId: selectedLead?.id,
+    };
+    userData.map((item) => {
+      requestBody[item.key] = {};
+      item.questions.map((qn) => {
+        if (qn.answer2) {
+          requestBody[item.key][qn.key] = {
+            answer: qn.answer || qn.defaultValue || false,
+            answer2: qn.answer2,
+          };
+        } else {
+          requestBody[item.key][qn.key] = qn.answer || qn.defaultValue;
+        }
+      });
+    });
+
     const consultationResult = await createConsultation(requestBody);
     requestBody.consultationId = consultationResult?.data?.id;
     // if() // if no lead
     requestBody.leadsId = selectedLead?.id;
+    console.log(requestBody, "after consultation", checkCustomerSignup());
     if (checkCustomerSignup()) {
       const customerResult = await createCustomer(requestBody);
       openSnackBar(customerResult);
@@ -371,12 +405,16 @@ const Consultation = () => {
   };
 
   const handleDrawer = () => {
-    userData.map((item) => {
-      item.questions.map((item2) => {
-        delete item2.answer;
-        delete item2.defaultValue;
+    if (!isOpen) {
+      userData.map((item) => {
+        item.questions &&
+          item.questions.map((item2) => {
+            delete item2.answer;
+            delete item2.defaultValue;
+          });
       });
-    });
+    }
+
     setUserData([...userData]);
     setOpen(!isOpen);
   };
@@ -474,9 +512,6 @@ const Consultation = () => {
                   packages={packages}
                   leads={leads}
                 ></Stepper>
-
-                <div>Email: {user.email}</div>
-                <button onClick={() => logout()}>Logout</button>
               </Box>
             </Backdrop>
             <DataTable data={consultations} columns={columns} />

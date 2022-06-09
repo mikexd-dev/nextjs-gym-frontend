@@ -4,26 +4,43 @@ import Autocomplete from "@mui/material/Autocomplete";
 import TextField from "@mui/material/TextField";
 import Stack from "@mui/material/Stack";
 
-export default function Tags({ label, options, handleChange, value }) {
+export default function Tags({
+  label,
+  options,
+  handleChange,
+  value,
+  isCustomData,
+}) {
+  console.log(options);
   return (
     <Stack spacing={3} sx={{ width: 500 }}>
       <Autocomplete
         multiple
         id="tags-filled"
-        options={programType.map((option) => option.title)}
+        options={
+          isCustomData ? options : programType.map((option) => option.title)
+        }
         onChange={(event, value) => handleChange(value)}
-        defaultValue={[programType[0].title]}
+        defaultValue={[isCustomData ? null : programType[0].title]}
         freeSolo
         variant="outlined"
         value={value}
         renderTags={(value, getTagProps) =>
-          value.map((option, index) => (
-            <Chip
-              variant="outlined"
-              label={option}
-              {...getTagProps({ index })}
-            />
-          ))
+          value.map((option, index) =>
+            option.label ? (
+              <Chip
+                variant="outlined"
+                label={option.label}
+                {...getTagProps({ index })}
+              />
+            ) : (
+              <Chip
+                variant="outlined"
+                label={option}
+                {...getTagProps({ index })}
+              />
+            )
+          )
         }
         renderInput={(params) => (
           <TextField

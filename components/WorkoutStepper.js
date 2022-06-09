@@ -58,7 +58,7 @@ export default function VerticalLinearStepper({
       <Stepper
         activeStep={activeStep}
         orientation="vertical"
-        key={steps.length}
+        key={steps.parts.length}
       >
         {steps?.parts?.length > 0 &&
           steps?.parts.map((workout, index) => (
@@ -79,60 +79,65 @@ export default function VerticalLinearStepper({
                 <Box
                   sx={{
                     display: "flex",
-                    flexDirection: "column",
+                    flexDirection: "row",
                     justifyContent: "center",
                     alignItems: "flex-start",
                     rowGap: 4,
+                    columnGap: 4,
                     paddingTop: 3,
+                    flexWrap: "wrap",
                   }}
                 >
                   {workout.exercises.map((item, exerciseIndex) => {
                     return (
-                      <Box
-                        style={{
-                          display: "flex",
-                          flexDirection: "column",
-                          justifyContent: "center",
-                          columnGap: 10,
-                          alignItems: "center",
-                          paddingBottom: 10,
-                        }}
-                      >
+                      <>
                         <Box
                           style={{
                             display: "flex",
-                            flexDirection: "row",
+                            flexDirection: "column",
                             justifyContent: "center",
                             columnGap: 10,
                             alignItems: "center",
                             paddingBottom: 10,
                           }}
                         >
-                          <Typography>{item.display}</Typography>
-                          <IconButton
-                            onClick={() =>
-                              handleRemoveExercise(index, exerciseIndex)
-                            }
-                            sx={{ p: 0, color: "red" }}
+                          <Box
+                            style={{
+                              display: "flex",
+                              flexDirection: "row",
+                              justifyContent: "center",
+                              columnGap: 10,
+                              alignItems: "center",
+                              paddingBottom: 10,
+                            }}
                           >
-                            <MdDelete sx={{ color: "red" }} />
-                          </IconButton>
-                          {/* <Button
+                            <Typography>{item.display}</Typography>
+                            <IconButton
+                              onClick={() =>
+                                handleRemoveExercise(index, exerciseIndex)
+                              }
+                              sx={{ p: 0, color: "red" }}
+                            >
+                              <MdDelete sx={{ color: "red" }} />
+                            </IconButton>
+                            {/* <Button
                             onClick={() =>
                               handleRemoveExercise(index, exerciseIndex)
                             }
                           >
                             <MdDelete sx={{ width: 20 }} />
                           </Button> */}
+                          </Box>
+
+                          <SimpleAccordion
+                            exercise={item}
+                            options={exercises}
+                            handleChange={(value, qnIndex) =>
+                              handleChange(value, index, exerciseIndex, qnIndex)
+                            }
+                          />
                         </Box>
 
-                        <SimpleAccordion
-                          exercise={item}
-                          options={exercises}
-                          handleChange={(value, qnIndex) =>
-                            handleChange(value, index, exerciseIndex, qnIndex)
-                          }
-                        />
                         {exerciseIndex === workout.exercises.length - 1 && (
                           <Box sx={{ mb: 2, paddingTop: 6 }}>
                             <div>
@@ -143,36 +148,41 @@ export default function VerticalLinearStepper({
                                 }
                                 sx={{ mt: 1, mr: 1 }}
                               >
-                                Add Exercise
+                                Add{" "}
+                                {item.type === "warmup" ? "Warmup" : "Exercise"}
                               </Button>
                             </div>
                           </Box>
                         )}
-                      </Box>
+                      </>
                     );
                   })}
                 </Box>
-                <Box sx={{ mb: 2, paddingTop: 6 }}>
-                  <div>
-                    <Button
-                      variant="contained"
-                      onClick={() => {
-                        handleAddPart(index);
-                        handleNext();
-                      }}
-                      sx={{ mt: 1, mr: 1 }}
-                    >
-                      New Part
-                    </Button>
-                    <Button
-                      disabled={index === 0}
-                      onClick={() => handleRemovePart(index)}
-                      sx={{ mt: 1, mr: 1 }}
-                    >
-                      Remove {workout.display}
-                    </Button>
-                  </div>
-                </Box>
+                {index !== 0 && (
+                  <Box sx={{ mb: 2, paddingTop: 6 }}>
+                    <div>
+                      <Button
+                        variant="contained"
+                        onClick={() => {
+                          handleAddPart(index);
+                          handleNext();
+                        }}
+                        color="success"
+                        sx={{ mt: 1, mr: 1 }}
+                      >
+                        New Part
+                      </Button>
+                      <Button
+                        disabled={index === 0}
+                        color="error"
+                        onClick={() => handleRemovePart(index)}
+                        sx={{ mt: 1, mr: 1 }}
+                      >
+                        Remove {workout.display}
+                      </Button>
+                    </div>
+                  </Box>
+                )}
 
                 <Box sx={{ mb: 2, paddingTop: 6 }}>
                   {stepLabel && (
@@ -181,19 +191,24 @@ export default function VerticalLinearStepper({
                     </Typography>
                   )}
                   <div>
-                    <Button
-                      variant="contained"
-                      onClick={handleNext}
-                      sx={{ mt: 1, mr: 1 }}
-                    >
-                      {index === steps.length - 1 ? "Finish" : "Continue"}
-                    </Button>
+                    {index < steps.parts.length - 1 && (
+                      <Button
+                        variant="contained"
+                        onClick={handleNext}
+                        sx={{ mt: 1, mr: 1 }}
+                      >
+                        {index === steps.parts.length - 1
+                          ? "Finish"
+                          : "Next Part"}
+                      </Button>
+                    )}
                     <Button
                       disabled={index === 0}
                       onClick={handleBack}
+                      color="warning"
                       sx={{ mt: 1, mr: 1 }}
                     >
-                      Back
+                      Previous Part
                     </Button>
                   </div>
                 </Box>
