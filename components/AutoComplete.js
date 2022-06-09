@@ -13,7 +13,7 @@ export default function Tags({
 }) {
   console.log(options);
   return (
-    <Stack spacing={3} sx={{ width: 500 }}>
+    <Stack spacing={3} sx={{ width: 400 }}>
       <Autocomplete
         multiple
         id="tags-filled"

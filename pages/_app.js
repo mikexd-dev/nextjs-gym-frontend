@@ -1,4 +1,5 @@
 import "../styles/globals.css";
+import "../styles/Calendar.css";
 import { MuiThemeProvider, createTheme } from "@material-ui/core/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 

@@ -22,6 +22,7 @@ import { CgGym } from "react-icons/cg";
 import { GiGymBag, GiTakeMyMoney } from "react-icons/gi";
 import { FaUserSecret, FaUserPlus, FaUser, FaUserTie } from "react-icons/fa";
 import { IoMdHome } from "react-icons/io";
+import { BsFillCalendarPlusFill } from "react-icons/bs";
 
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import Link from "next/link";
@@ -60,6 +61,11 @@ const adminmMenu = [
   {
     display: "Customers",
     path: "/customers",
+    role: "admin",
+  },
+  {
+    display: "Bookings",
+    path: "/booking",
     role: "admin",
   },
 ];
@@ -211,6 +217,7 @@ export default function ClippedDrawer({ children }) {
                       {obj.path === "/trainers" && <FaUserSecret />}
                       {obj.path === "/leads" && <FaUserPlus />}
                       {obj.path === "/consultation" && <FaUserTie />}
+                      {obj.path === "/booking" && <BsFillCalendarPlusFill />}
                     </ListItemIcon>
                     <ListItemText primary={obj.display} />
                   </ListItem>

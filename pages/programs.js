@@ -375,7 +375,7 @@ const Programs = () => {
       await fetchCustomers(token);
     }
     setLoading(false);
-  }, [fetchExercises, fetchPrograms]);
+  }, [fetchExercises, fetchPrograms, fetchCustomers]);
 
   const openSnackBar = (result) => {
     if (result.status && result.status === "success") {

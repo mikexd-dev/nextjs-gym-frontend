@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import Stack from "@mui/material/Stack";
-import Tooltip from '@mui/material/Tooltip';
+import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import { MdEdit } from "react-icons/md";
 
@@ -18,7 +18,7 @@ import Snackbar from "../components/Snackbar";
 import TrainerDrawer from "../components/TrainerDrawer";
 import { url } from "../urlConfig";
 
-const trainerFormDataInitialState = { name: "", expertise: "" }
+const trainerFormDataInitialState = { name: "", expertise: "" };
 
 const Trainers = () => {
   const { user } = useUser();
@@ -30,7 +30,9 @@ const Trainers = () => {
   const [isSubmitEnabled, setIsSubmitEnabled] = useState(false);
   const [snackbar, setSnackbar] = useState({ message: "", severity: "" });
   const [trainers, setTrainers] = useState([]);
-  const [trainerFormData, setTrainerFormData] = useState(trainerFormDataInitialState);
+  const [trainerFormData, setTrainerFormData] = useState(
+    trainerFormDataInitialState
+  );
   const [selectedTrainerId, setSelectedTrainerId] = useState("");
   const [jwtToken, setJwtToken] = useState();
   const [anchorEl, setAnchorEl] = useState(null);
@@ -51,15 +53,17 @@ const Trainers = () => {
 
   const openSnackBar = (result) => {
     setSnackbar(
-      result?.status === "success" ? {
-        message: result.message,
-        severity: "success" 
-      } : {
-        message: result.message || result.error?.message,
-        severity: "error" 
-      }
-    )
-    
+      result?.status === "success"
+        ? {
+            message: result.message,
+            severity: "success",
+          }
+        : {
+            message: result.message || result.error?.message,
+            severity: "error",
+          }
+    );
+
     setSnackbarOpen(true);
   };
 
@@ -98,14 +102,14 @@ const Trainers = () => {
   const handleCloseDrawer = () => {
     setDrawerOpen(false);
     setTrainerFormData(trainerFormDataInitialState);
-  }
+  };
 
   const handleTrainerFormChange = (property) => (e) => {
-    const trainerData = {...trainerFormData, [property]: e.target.value}
-    setTrainerFormData(trainerData)
-    const isAllFilled = !!trainerData.name && !!trainerData.expertise
+    const trainerData = { ...trainerFormData, [property]: e.target.value };
+    setTrainerFormData(trainerData);
+    const isAllFilled = !!trainerData.name && !!trainerData.expertise;
     setIsSubmitEnabled(isAllFilled);
-  }
+  };
 
   const createNewTrainer = async (body) => {
     const response = await fetch(`${url}/trainers`, {
@@ -124,18 +128,18 @@ const Trainers = () => {
     }
     const trainerCreated = await response.json();
     openSnackBar(trainerCreated);
-  }
-  
+  };
+
   const handleAddNewTrainer = async () => {
     await createNewTrainer(trainerFormData);
     setDrawerOpen(false);
     setTrainerFormData(trainerFormDataInitialState);
     await fetchTrainers(jwtToken);
-  }
+  };
 
   const closePopper = () => {
     setPopperOpen(false);
-  }
+  };
 
   const deleteTrainer = async () => {
     const response = await fetch(`${url}/trainers/${selectedTrainerId}`, {
@@ -143,7 +147,7 @@ const Trainers = () => {
       headers: {
         Authorization: `Bearer ${jwtToken}`,
         "Content-Type": "application/json",
-      }
+      },
     });
     setSelectedTrainerId("");
     if (!response.ok) {
@@ -155,7 +159,7 @@ const Trainers = () => {
     openSnackBar(trainerDeleted);
     closePopper();
     await fetchTrainers(jwtToken);
-  }
+  };
 
   const handleDeleteTrainer = (id) => (event) => {
     setSelectedTrainerId(id);
@@ -180,33 +184,33 @@ const Trainers = () => {
     }
     const trainerUpdated = await response.json();
     openSnackBar(trainerUpdated);
-  }
+  };
 
   const handleUpdateTrainer = async () => {
-    await updateTrainer(trainerFormData)
+    await updateTrainer(trainerFormData);
     setDrawerOpen(false);
-    setTrainerFormData(trainerFormDataInitialState)
+    setTrainerFormData(trainerFormDataInitialState);
     await fetchTrainers(jwtToken);
-  }
+  };
 
   const handleEditClick = (id) => () => {
-    const selectedTrainer = trainers.find(trainer => trainer.id === id)
+    const selectedTrainer = trainers.find((trainer) => trainer.id === id);
     setTrainerFormData(selectedTrainer);
-    const isAllFilled = !!selectedTrainer.name && !!selectedTrainer.expertise
+    const isAllFilled = !!selectedTrainer.name && !!selectedTrainer.expertise;
     setIsSubmitEnabled(isAllFilled);
     setDrawerOpen(true);
-  }
+  };
 
   const columns = [
     { field: "index", headerName: "Index", width: 220 },
     { field: "name", headerName: "Name", width: 220 },
     { field: "expertise", headerName: "Expertise", width: 280 },
     {
-      field: 'actions',
-      type: 'actions',
-      headerName: 'Actions',
+      field: "actions",
+      type: "actions",
+      headerName: "Actions",
       width: 100,
-      cellClassName: 'actions',
+      cellClassName: "actions",
       getActions: ({ id }) => {
         return [
           <DeleteWithPopper
@@ -219,17 +223,14 @@ const Trainers = () => {
             onClick={handleDeleteTrainer(id)}
           />,
           <Tooltip title="Edit" placement="top">
-            <IconButton
-              aria-label="edit"
-              onClick={handleEditClick(id)}
-            >
+            <IconButton aria-label="edit" onClick={handleEditClick(id)}>
               <MdEdit />
             </IconButton>
-          </Tooltip>
+          </Tooltip>,
         ];
       },
-    }
-  ]
+    },
+  ];
 
   return (
     <div>
@@ -241,7 +242,7 @@ const Trainers = () => {
       />
       <Progress open={isLoading} />
       {user?.email && (
-        <Drawer> 
+        <Drawer>
           <Stack
             direction="row"
             spacing={20}
@@ -258,7 +259,7 @@ const Trainers = () => {
             >
               Trainers
             </Typography>
-            <Button variant="contained" onClick={()=>setDrawerOpen(true)}>
+            <Button variant="contained" onClick={() => setDrawerOpen(true)}>
               New Trainer
             </Button>
           </Stack>
@@ -267,15 +268,20 @@ const Trainers = () => {
             isDrawerOpen={isDrawerOpen}
             title={trainerFormData.id ? "Update Trainer" : "New Trainer"}
             formData={trainerFormData}
-            submitButtonLabel={trainerFormData.id ? "Done" : "Submit"}
+            submitButtonLabel={trainerFormData.id ? "Update" : "Submit"}
             isSubmitEnabled={isSubmitEnabled}
             onChange={handleTrainerFormChange}
-            onSubmit={trainerFormData.id ? handleUpdateTrainer : handleAddNewTrainer}
+            onSubmit={
+              trainerFormData.id ? handleUpdateTrainer : handleAddNewTrainer
+            }
             onDrawerClose={handleCloseDrawer}
           />
-          <DataTable 
-            data={trainers.map((trainer, index) => ({...trainer, index: index + 1}))} 
-            columns={columns} 
+          <DataTable
+            data={trainers.map((trainer, index) => ({
+              ...trainer,
+              index: index + 1,
+            }))}
+            columns={columns}
           />
         </Drawer>
       )}

@@ -38,7 +38,7 @@ export default function BasicGrid({ children }) {
             }}
           >
             <Avatar sx={{ m: 1, bgcolor: "secondary.main" }} />
-            <Typography component="h1" variant="h5">
+            <Typography component="h1" variant="h5" sx={{ paddingBottom: 5 }}>
               Atlass Fitness
             </Typography>
             {children}

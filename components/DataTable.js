@@ -3,11 +3,11 @@ import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 
 export default function DataTable({ data, columns }) {
   return (
-    <div style={{ height: 700, width: "100%" }}>
+    <div style={{ height: 500, width: "100%" }}>
       <DataGrid
         rows={data}
         columns={columns}
-        pageSize={11}
+        pageSize={10}
         rowsPerPageOptions={[5]}
         components={{ Toolbar: GridToolbar }}
         componentsProps={{
