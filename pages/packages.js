@@ -17,7 +17,7 @@ import Progress from "../components/Progress";
 import { url } from "../urlConfig";
 
 const columns = [
-  { field: "id", headerName: "ID", width: 200 },
+  { field: "index", headerName: "Index", width: 70 },
   { field: "name", headerName: "Name", width: 180 },
   { field: "type", headerName: "Type", width: 90 },
   { field: "price", headerName: "Price", width: 90 },
@@ -209,7 +209,13 @@ const Packages = () => {
                 <button onClick={() => logout()}>Logout</button> */}
             </Box>
           </Backdrop>
-          <DataTable data={packages} columns={columns} />
+          <DataTable
+            data={packages.map((p, index) => ({
+              ...p,
+              index: index + 1,
+            }))}
+            columns={columns}
+          />
         </Drawer>
       )}
     </>

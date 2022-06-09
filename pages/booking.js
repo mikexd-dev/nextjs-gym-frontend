@@ -13,6 +13,7 @@ import Button from "@mui/material/Button";
 
 import Snackbar from "../components/Snackbar";
 import Progress from "../components/Progress";
+import SimpleAccordion from "../components/AccordionBooking";
 import Autocomplete from "../components/Autocomplete";
 import { url } from "../urlConfig";
 
@@ -73,6 +74,7 @@ const Booking = () => {
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("");
   const [jwtToken, setJwtToken] = useState();
+  const [booking, setBooking] = useState({});
 
   useEffect(() => {
     const handleRouteChange = (url, { shallow }) => {
@@ -112,6 +114,7 @@ const Booking = () => {
   useEffect(async () => {
     setLoading(true);
     const token = getUserFromCookie()?.token;
+    setJwtToken(token);
     if (token) {
       setJwtToken(token);
       await fetchCustomers(token);
@@ -141,17 +144,38 @@ const Booking = () => {
   const onDateChange = (date) => {
     console.log(date, "date");
     console.log(date.toISOString());
-    console.log(date.toLocaleDateString());
+    console.log(getDateTime());
     setDate(date);
   };
 
+  const getDateTime = () => {
+    var mm = date.getMonth() + 1;
+    var dd = date.getDate();
+    var yy = date.getFullYear();
+    const dateTime = `${yy}/${mm}/${dd}`;
+    return dateTime;
+  };
+
   const checkAvailability = async () => {
-    console.log(date.toLocaleDateString());
+    console.log(getDateTime());
     setLoading(true);
-    setTimeout((i) => {
-      console.log("fetched");
-      setLoading(false);
-    }, 2000);
+    const response = await fetch(`${url}/booking/get`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${jwtToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ date: getDateTime() }),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      openSnackBar(error);
+    }
+    let data = await response.json();
+    openSnackBar(data);
+    console.log(data.data, "booking");
+    setBooking(data.data);
+    setLoading(false);
   };
 
   const handleCustomerChange = (value) => {
@@ -159,8 +183,46 @@ const Booking = () => {
     setActiveCustomers(value);
   };
 
-  const bookAppointment = (slot) => {
-    console.log(slot, activeCustomers, date.toLocaleDateString());
+  const bookAppointment = async (slotIndex) => {
+    setLoading(true);
+    console.log(slotIndex, activeCustomers, getDateTime());
+    const body = booking;
+    body.id = getDateTime();
+    activeCustomers.map((customer) => {
+      const { firstName, lastName } = customer.consultation[0]?.basicInfo;
+      body.slots[slotIndex].customersBooked.push({
+        id: customer.id,
+        name: firstName + " " + lastName,
+      });
+      body.slots[slotIndex].totalAvailableSlots--;
+    });
+
+    const response = await fetch(`${url}/booking`, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${jwtToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      openSnackBar(error);
+    }
+    let data = await response.json();
+    openSnackBar(data);
+    console.log(data.data, "booking");
+    setBooking(data.data);
+    setLoading(false);
+  };
+
+  const handleChange = (value, slotIndex, qnIndex) => {
+    console.log(value, slotIndex, qnIndex);
+    const temp = booking;
+    const key = temp.slots[slotIndex].questions[qnIndex].key;
+    temp.slots[slotIndex][key] = value;
+    console.log(temp);
+    setBooking({ ...temp });
   };
 
   return (
@@ -188,7 +250,7 @@ const Booking = () => {
               gutterBottom
               sx={{
                 fontWeight: "bold",
-                paddingBottom: 5,
+                paddingBottom: 2,
               }}
             >
               Bookings
@@ -239,38 +301,38 @@ const Booking = () => {
                 <Button variant="contained" onClick={checkAvailability}>
                   Check Availability
                 </Button>
-                {getBooking.slots.map((slot) => {
+
+                {booking.id && (
+                  <Box
+                    style={{
+                      display: "flex",
+                      flexDirection: "row",
+                      justifyContent: "flex-start",
+                      columnGap: 10,
+                      alignItems: "flex-start",
+                    }}
+                  >
+                    <Typography sx={{ fontWeight: "bold" }}>
+                      Availability:
+                    </Typography>{" "}
+                    {booking.totalAvailableSlots}/{booking.totalSlots}
+                  </Box>
+                )}
+                {booking?.slots?.map((slot, slotIndex) => {
                   return (
-                    <Box
-                      sx={{
-                        display: "flex",
-                        flexDirection: "column",
-                        justifyContent: "center",
-                        alignItems: "flex-start",
-                        paddingBottom: 5,
-                      }}
-                    >
-                      <div>
-                        Time: {slot.start} - {slot.end}
-                      </div>
-                      <div>Available Slot: {slot.totalAvailableSlots}</div>
-                      <Button
-                        variant="outlined"
-                        onClick={() => bookAppointment(slot)}
-                        sx={{ marginTop: 1 }}
-                        disabled={activeCustomers.length === 0}
-                      >
-                        Book
-                      </Button>
-                    </Box>
+                    <SimpleAccordion
+                      slot={slot}
+                      activeCustomers={activeCustomers}
+                      handleChange={(value, qnIndex) =>
+                        handleChange(value, slotIndex, qnIndex)
+                      }
+                      bookAppointment={() => bookAppointment(slotIndex)}
+                    />
                   );
                 })}
               </Box>
             </Stack>
           </Box>
-
-          {/* <div>Email: {user.email}</div>
-            <button onClick={() => logout()}>Logout</button> */}
         </Drawer>
       )}
     </div>

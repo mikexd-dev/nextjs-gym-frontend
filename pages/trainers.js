@@ -202,7 +202,7 @@ const Trainers = () => {
   };
 
   const columns = [
-    { field: "index", headerName: "Index", width: 220 },
+    { field: "index", headerName: "Index", width: 70 },
     { field: "name", headerName: "Name", width: 220 },
     { field: "expertise", headerName: "Expertise", width: 280 },
     {

@@ -29,7 +29,7 @@ export default function SimpleAccordion({ exercise, options, handleChange }) {
             alignItems: "center",
           }}
         >
-          {exercise.questions.map((input, index) => (
+          {exercise?.questions?.map((input, index) => (
             <Box
               style={{
                 display: "flex",

@@ -19,7 +19,7 @@ import Snackbar from "../components/Snackbar";
 import { url } from "../urlConfig";
 
 const columns = [
-  { field: "id", headerName: "ID", width: 200 },
+  { field: "index", headerName: "Index", width: 70 },
   { field: "dateCreated", headerName: "Date", width: 180 },
   { field: "firstName", headerName: "First name", width: 90 },
   { field: "lastName", headerName: "Last name", width: 90 },
@@ -514,7 +514,13 @@ const Consultation = () => {
                 ></Stepper>
               </Box>
             </Backdrop>
-            <DataTable data={consultations} columns={columns} />
+            <DataTable
+              data={consultations.map((c, index) => ({
+                ...c,
+                index: index + 1,
+              }))}
+              columns={columns}
+            />
           </>
         </Drawer>
       )}

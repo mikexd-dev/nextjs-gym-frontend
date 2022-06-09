@@ -13,7 +13,7 @@ import Snackbar from "../components/Snackbar";
 import { url } from "../urlConfig";
 
 const columns = [
-  { field: "id", headerName: "ID", width: 200 },
+  { field: "index", headerName: "Index", width: 70 },
   { field: "firstName", headerName: "First Name", width: 120 },
   { field: "lastName", headerName: "Last Name", width: 120 },
   { field: "enquiredDate", headerName: "Enquired On", width: 140 },
@@ -146,7 +146,13 @@ const Leads = () => {
               Leads
             </Typography>
           </Stack>
-          <DataTable data={leads} columns={columns} />
+          <DataTable
+            data={leads.map((l, index) => ({
+              ...l,
+              index: index + 1,
+            }))}
+            columns={columns}
+          />
         </Drawer>
       )}
     </div>

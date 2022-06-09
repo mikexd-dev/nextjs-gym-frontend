@@ -18,20 +18,21 @@ import Snackbar from "../components/Snackbar";
 import { url } from "../urlConfig";
 
 const columns = [
-  { field: "id", headerName: "ID", width: 200 },
+  // { field: "id", headerName: "ID", width: 200 },
+  { field: "index", headerName: "Index", width: 70 },
   { field: "name", headerName: "Name", width: 180 },
-  { field: "type", headerName: "Type", width: 180 },
-  { field: "bodyParts", headerName: "Body Part", width: 90 },
-  { field: "equipment", headerName: "Equipment", width: 90 },
-  {
-    field: "addonEquipment",
-    headerName: "AddOn",
-    width: 120,
-  },
+  { field: "type", headerName: "Type", width: 100 },
+  { field: "bodyParts", headerName: "Body Part", width: 150 },
+  { field: "equipment", headerName: "Equipment", width: 150 },
+  // {
+  //   field: "addonEquipment",
+  //   headerName: "AddOn",
+  //   width: 120,
+  // },
   {
     field: "generalSetup",
     headerName: "General Setup",
-    width: 180,
+    width: 150,
   },
   {
     field: "upperSetup",
@@ -41,33 +42,28 @@ const columns = [
   {
     field: "lowerSetup",
     headerName: "Lower Setup",
-    width: 70,
+    width: 150,
   },
-  {
-    field: "execution",
-    headerName: "Execution",
-    width: 70,
-  },
-  {
-    field: "progression",
-    headerName: "Progression",
-    width: 70,
-  },
-  {
-    field: "caution",
-    headerName: "Caution",
-    width: 70,
-  },
+  // {
+  //   field: "execution",
+  //   headerName: "Execution",
+  //   width: 70,
+  // },
+  // {
+  //   field: "progression",
+  //   headerName: "Progression",
+  //   width: 70,
+  // },
+  // {
+  //   field: "caution",
+  //   headerName: "Caution",
+  //   width: 70,
+  // },
   {
     field: "strengthQuality",
     headerName: "Strength Quality",
-    width: 70,
+    width: 150,
   },
-  // {
-  //   field: "typeOfPackage",
-  //   headerName: "Package",
-  //   width: 90,
-  // }
 ];
 
 const questions = [
@@ -430,7 +426,13 @@ const Exercises = () => {
               ></Stepper>
             </Box>
           </Backdrop>
-          <DataTable data={exercises} columns={columns} />
+          <DataTable
+            data={exercises.map((exercise, index) => ({
+              ...exercise,
+              index: index + 1,
+            }))}
+            columns={columns}
+          />
         </Drawer>
       )}
     </div>

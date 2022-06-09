@@ -36,50 +36,11 @@ import Workout from "../components/WorkoutStepper";
 import { url } from "../urlConfig";
 
 const columns = [
-  { field: "id", headerName: "ID", width: 200 },
-  { field: "programName", headerName: "Name", width: 180 },
-  { field: "programSubName", headerName: "Sub Name", width: 90 },
-  { field: "equipment", headerName: "Equipment", width: 90 },
-  {
-    field: "addonEquipment",
-    headerName: "AddOn",
-    width: 120,
-  },
-  {
-    field: "generalSetup",
-    headerName: "General Setup",
-    width: 180,
-  },
-  {
-    field: "upperSetup",
-    headerName: "Upper Setup",
-    width: 150,
-  },
-  {
-    field: "lowerSetup",
-    headerName: "Lower Setup",
-    width: 70,
-  },
-  {
-    field: "execution",
-    headerName: "Execution",
-    width: 70,
-  },
-  {
-    field: "progression",
-    headerName: "Progression",
-    width: 70,
-  },
-  {
-    field: "caution",
-    headerName: "Caution",
-    width: 70,
-  },
-  {
-    field: "strengthQuality",
-    headerName: "strengthQuality",
-    width: 70,
-  },
+  { field: "index", headerName: "Index", width: 70 },
+  { field: "programName", headerName: "Program Name", width: 150 },
+  { field: "programSubName", headerName: "Sub Name", width: 150 },
+  { field: "programType", headerName: "Program Type", width: 250 },
+  { field: "programNature", headerName: "Program Nature", width: 250 },
 ];
 
 const daysContent = [
@@ -1279,7 +1240,13 @@ const Programs = () => {
               </Stack> */}
             </Box>
           </Backdrop>
-          <DataTable data={programs} columns={columns} />
+          <DataTable
+            data={programs.map((p, index) => ({
+              ...p,
+              index: index + 1,
+            }))}
+            columns={columns}
+          />
         </Drawer>
       )}
     </div>
