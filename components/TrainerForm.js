@@ -23,14 +23,12 @@ export default function TrainerForm({
     >
       <Stack spacing={2} sx={{ width: "100%" }} alignItems="center">
         <TextField 
-          defaultValue=""
           label="Name"
           value={data.name}    
           handleChange={onChange("name")}
           isMultiline={true}
         />
         <TextField 
-          defaultValue=""
           label="Expertise"
           value={data.expertise}
           handleChange={onChange("expertise")}

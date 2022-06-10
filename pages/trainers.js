@@ -27,7 +27,6 @@ const Trainers = () => {
   const [isDrawerOpen, setDrawerOpen] = useState(false);
   const [isSnackbarOpen, setSnackbarOpen] = useState(false);
   const [isPopperOpen, setPopperOpen] = useState(false);
-  const [isSubmitEnabled, setIsSubmitEnabled] = useState(false);
   const [snackbar, setSnackbar] = useState({ message: "", severity: "" });
   const [trainers, setTrainers] = useState([]);
   const [trainerFormData, setTrainerFormData] = useState(
@@ -36,6 +35,8 @@ const Trainers = () => {
   const [selectedTrainerId, setSelectedTrainerId] = useState("");
   const [jwtToken, setJwtToken] = useState();
   const [anchorEl, setAnchorEl] = useState(null);
+
+  const isSubmitEnabled = !!trainerFormData.name && !!trainerFormData.expertise;
 
   useEffect(() => {
     const handleRouteChange = (url, { shallow }) => {
@@ -107,8 +108,6 @@ const Trainers = () => {
   const handleTrainerFormChange = (property) => (e) => {
     const trainerData = { ...trainerFormData, [property]: e.target.value };
     setTrainerFormData(trainerData);
-    const isAllFilled = !!trainerData.name && !!trainerData.expertise;
-    setIsSubmitEnabled(isAllFilled);
   };
 
   const createNewTrainer = async (body) => {
@@ -196,8 +195,6 @@ const Trainers = () => {
   const handleEditClick = (id) => () => {
     const selectedTrainer = trainers.find((trainer) => trainer.id === id);
     setTrainerFormData(selectedTrainer);
-    const isAllFilled = !!selectedTrainer.name && !!selectedTrainer.expertise;
-    setIsSubmitEnabled(isAllFilled);
     setDrawerOpen(true);
   };
 
