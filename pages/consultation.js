@@ -5,6 +5,9 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
 import { MdClose } from "react-icons/md";
+import { GrFormRefresh } from "react-icons/gr";
+import { IconContext } from "react-icons";
+import ListItemIcon from "@mui/material/ListItemIcon";
 
 import withAuth from "../auth/withAuth";
 import { useUser } from "../auth/useUser";
@@ -98,6 +101,12 @@ const Consultation = () => {
     setUserData(stepperData);
     openSnackBar(onboard);
   }, []);
+
+  const refresh = async () => {
+    setLoading(true);
+    await fetchConsultations();
+    setLoading(false);
+  };
 
   const fetchConsultations = useCallback(async (token) => {
     const response = await fetch(`${url}/consultation`, {
@@ -455,9 +464,22 @@ const Consultation = () => {
               >
                 Consultations
               </Typography>
-              <Button variant="contained" onClick={toggleDrawer(true)}>
-                New Consultation
-              </Button>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "row",
+                  justifyContent: "center",
+                  alignItems: "flex-start",
+                  columnGap: 5,
+                }}
+              >
+                <Button variant="outlined" onClick={refresh}>
+                  Refresh
+                </Button>
+                <Button variant="contained" onClick={toggleDrawer(true)}>
+                  New Consultation
+                </Button>
+              </Box>
             </Stack>
 
             <Backdrop toggleDrawer={toggleDrawer} isOpen={isOpen}>

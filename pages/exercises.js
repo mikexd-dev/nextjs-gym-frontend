@@ -344,6 +344,12 @@ const Exercises = () => {
     setLoading(false);
   };
 
+  const refresh = async () => {
+    setLoading(true);
+    await fetchExercises();
+    setLoading(false);
+  };
+
   return (
     <div>
       <Snackbar
@@ -371,9 +377,23 @@ const Exercises = () => {
             >
               Exercises
             </Typography>
-            <Button variant="contained" onClick={toggleDrawer(true)}>
-              New Exercises
-            </Button>
+
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: "center",
+                alignItems: "flex-start",
+                columnGap: 5,
+              }}
+            >
+              <Button variant="outlined" onClick={refresh}>
+                Refresh
+              </Button>
+              <Button variant="contained" onClick={toggleDrawer(true)}>
+                New Exercises
+              </Button>
+            </Box>
           </Stack>
 
           <Backdrop toggleDrawer={toggleDrawer} isOpen={isOpen}>

@@ -17,6 +17,7 @@ function MultilineTextFields({
   value,
   isMultiline,
   defaultValue,
+  disabled,
 }) {
   return (
     <TextField
@@ -28,6 +29,7 @@ function MultilineTextFields({
       onChange={handleChange}
       defaultValue={defaultValue}
       variant="outlined"
+      disabled={disabled}
       InputLabelProps={{ shrink: true }}
       sx={{
         width: 400,
