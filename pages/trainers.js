@@ -18,7 +18,8 @@ import Snackbar from "../components/Snackbar";
 import TrainerDrawer from "../components/TrainerDrawer";
 import { url } from "../urlConfig";
 
-const trainerFormDataInitialState = { name: "", expertise: "" };
+const trainerFormDataInitialValue = { name: "", expertise: "" };
+const API_SUCCESS_STATUS = "success";
 
 const Trainers = () => {
   const { user } = useUser();
@@ -27,15 +28,16 @@ const Trainers = () => {
   const [isDrawerOpen, setDrawerOpen] = useState(false);
   const [isSnackbarOpen, setSnackbarOpen] = useState(false);
   const [isPopperOpen, setPopperOpen] = useState(false);
-  const [isSubmitEnabled, setIsSubmitEnabled] = useState(false);
   const [snackbar, setSnackbar] = useState({ message: "", severity: "" });
   const [trainers, setTrainers] = useState([]);
   const [trainerFormData, setTrainerFormData] = useState(
-    trainerFormDataInitialState
+    trainerFormDataInitialValue
   );
   const [selectedTrainerId, setSelectedTrainerId] = useState("");
   const [jwtToken, setJwtToken] = useState();
   const [anchorEl, setAnchorEl] = useState(null);
+
+  const isSubmitEnabled = !!trainerFormData.name && !!trainerFormData.expertise;
 
   useEffect(() => {
     const handleRouteChange = (url, { shallow }) => {
@@ -101,40 +103,39 @@ const Trainers = () => {
 
   const handleCloseDrawer = () => {
     setDrawerOpen(false);
-    setTrainerFormData(trainerFormDataInitialState);
+    setTrainerFormData(trainerFormDataInitialValue);
   };
 
   const handleTrainerFormChange = (property) => (e) => {
     const trainerData = { ...trainerFormData, [property]: e.target.value };
     setTrainerFormData(trainerData);
-    const isAllFilled = !!trainerData.name && !!trainerData.expertise;
-    setIsSubmitEnabled(isAllFilled);
   };
 
   const createNewTrainer = async (body) => {
-    const response = await fetch(`${url}/trainers`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${jwtToken}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
-    });
-    if (!response.ok) {
-      const error = await response.json();
-      openSnackBar(error);
-      setTrainerFormData(trainerFormDataInitialState);
-      return;
+    try {
+      const response = await fetch(`${url}/trainers`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${jwtToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      });
+      const result = await response.json();
+      return result;
+    } catch {
+      return { message: "Something went wrong" };
     }
-    const trainerCreated = await response.json();
-    openSnackBar(trainerCreated);
   };
-
+  
   const handleAddNewTrainer = async () => {
-    await createNewTrainer(trainerFormData);
+    const response = await createNewTrainer(trainerFormData);
+    openSnackBar(response);
+    setTrainerFormData(trainerFormDataInitialValue);
     setDrawerOpen(false);
-    setTrainerFormData(trainerFormDataInitialState);
-    await fetchTrainers(jwtToken);
+    if(response?.status === API_SUCCESS_STATUS) {
+      await fetchTrainers(jwtToken);
+    }
   };
 
   const closePopper = () => {
@@ -142,23 +143,24 @@ const Trainers = () => {
   };
 
   const deleteTrainer = async () => {
-    const response = await fetch(`${url}/trainers/${selectedTrainerId}`, {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${jwtToken}`,
-        "Content-Type": "application/json",
-      },
-    });
-    setSelectedTrainerId("");
-    if (!response.ok) {
-      const error = await response.json();
-      openSnackBar(error);
-      return;
+    try {
+      const response = await fetch(`${url}/trainers/${selectedTrainerId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${jwtToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+      const result = await response.json();
+      openSnackBar(result);
+      if (response.ok) {
+        await fetchTrainers(jwtToken)
+      };
+    } catch {
+      openSnackBar({message: "Something went wrong"});
     }
-    const trainerDeleted = await response.json();
-    openSnackBar(trainerDeleted);
+    setSelectedTrainerId("");
     closePopper();
-    await fetchTrainers(jwtToken);
   };
 
   const handleDeleteTrainer = (id) => (event) => {
@@ -168,36 +170,35 @@ const Trainers = () => {
   };
 
   const updateTrainer = async (body) => {
-    const response = await fetch(`${url}/trainers/${trainerFormData.id}`, {
-      method: "PATCH",
-      headers: {
-        Authorization: `Bearer ${jwtToken}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
-    });
-    if (!response.ok) {
-      const error = await response.json();
-      openSnackBar(error);
-      setTrainerFormData(trainerFormDataInitialState);
-      return;
+    try {
+      const response = await fetch(`${url}/trainers/${trainerFormData.id}`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${jwtToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      });
+      const result = await response.json();
+      return result;
+    } catch {
+      return { message: "Something went wrong" };
     }
-    const trainerUpdated = await response.json();
-    openSnackBar(trainerUpdated);
   };
-
+  
   const handleUpdateTrainer = async () => {
-    await updateTrainer(trainerFormData);
+    const response = await updateTrainer(trainerFormData);
+    openSnackBar(response);
     setDrawerOpen(false);
-    setTrainerFormData(trainerFormDataInitialState);
-    await fetchTrainers(jwtToken);
+    setTrainerFormData(trainerFormDataInitialValue);
+    if(response?.status === API_SUCCESS_STATUS) {
+      await fetchTrainers(jwtToken);
+    }
   };
 
   const handleEditClick = (id) => () => {
     const selectedTrainer = trainers.find((trainer) => trainer.id === id);
     setTrainerFormData(selectedTrainer);
-    const isAllFilled = !!selectedTrainer.name && !!selectedTrainer.expertise;
-    setIsSubmitEnabled(isAllFilled);
     setDrawerOpen(true);
   };
 
