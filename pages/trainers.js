@@ -6,7 +6,7 @@ import Stack from "@mui/material/Stack";
 import Tooltip from "@mui/material/Tooltip";
 import Typography from "@mui/material/Typography";
 import { MdEdit } from "react-icons/md";
-
+import Box from "@mui/material/Box";
 import withAuth from "../auth/withAuth";
 import { useUser } from "../auth/useUser";
 import { getUserFromCookie } from "../auth/userCookie";
@@ -81,6 +81,7 @@ const Trainers = () => {
     }
     const data = await response.json();
     setTrainers(data.data);
+    openSnackBar(data);
   }, []);
 
   useEffect(async () => {
@@ -127,13 +128,13 @@ const Trainers = () => {
       return { message: "Something went wrong" };
     }
   };
-  
+
   const handleAddNewTrainer = async () => {
     const response = await createNewTrainer(trainerFormData);
     openSnackBar(response);
     setTrainerFormData(trainerFormDataInitialValue);
     setDrawerOpen(false);
-    if(response?.status === API_SUCCESS_STATUS) {
+    if (response?.status === API_SUCCESS_STATUS) {
       await fetchTrainers(jwtToken);
     }
   };
@@ -143,6 +144,7 @@ const Trainers = () => {
   };
 
   const deleteTrainer = async () => {
+    setIsLoading(true);
     try {
       const response = await fetch(`${url}/trainers/${selectedTrainerId}`, {
         method: "DELETE",
@@ -154,13 +156,14 @@ const Trainers = () => {
       const result = await response.json();
       openSnackBar(result);
       if (response.ok) {
-        await fetchTrainers(jwtToken)
-      };
+        await fetchTrainers(jwtToken);
+      }
     } catch {
-      openSnackBar({message: "Something went wrong"});
+      openSnackBar({ message: "Something went wrong" });
     }
     setSelectedTrainerId("");
     closePopper();
+    setIsLoading(false);
   };
 
   const handleDeleteTrainer = (id) => (event) => {
@@ -185,21 +188,29 @@ const Trainers = () => {
       return { message: "Something went wrong" };
     }
   };
-  
+
   const handleUpdateTrainer = async () => {
+    setIsLoading(true);
     const response = await updateTrainer(trainerFormData);
     openSnackBar(response);
     setDrawerOpen(false);
     setTrainerFormData(trainerFormDataInitialValue);
-    if(response?.status === API_SUCCESS_STATUS) {
+    if (response?.status === API_SUCCESS_STATUS) {
       await fetchTrainers(jwtToken);
     }
+    setIsLoading(false);
   };
 
   const handleEditClick = (id) => () => {
     const selectedTrainer = trainers.find((trainer) => trainer.id === id);
     setTrainerFormData(selectedTrainer);
     setDrawerOpen(true);
+  };
+
+  const refresh = async () => {
+    setIsLoading(true);
+    await fetchTrainers();
+    setIsLoading(false);
   };
 
   const columns = [
@@ -260,9 +271,22 @@ const Trainers = () => {
             >
               Trainers
             </Typography>
-            <Button variant="contained" onClick={() => setDrawerOpen(true)}>
-              New Trainer
-            </Button>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: "center",
+                alignItems: "flex-start",
+                columnGap: 5,
+              }}
+            >
+              <Button variant="outlined" onClick={refresh}>
+                Refresh
+              </Button>
+              <Button variant="contained" onClick={() => setDrawerOpen(true)}>
+                New Trainer
+              </Button>
+            </Box>
           </Stack>
           <TrainerDrawer
             setDrawerOpen={setDrawerOpen}

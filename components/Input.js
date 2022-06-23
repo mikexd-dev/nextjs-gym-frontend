@@ -18,13 +18,16 @@ function MultilineTextFields({
   isMultiline,
   defaultValue,
   disabled,
+  type,
 }) {
+  // console.log(label, type, "input type");
   return (
     <TextField
       id="standard-multiline-flexible"
       label={label}
       multiline={isMultiline}
       maxRows={4}
+      type="number"
       value={value}
       onChange={handleChange}
       defaultValue={defaultValue}

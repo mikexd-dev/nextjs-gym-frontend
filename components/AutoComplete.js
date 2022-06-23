@@ -11,7 +11,6 @@ export default function Tags({
   value,
   isCustomData,
 }) {
-  console.log(options);
   return (
     <Stack spacing={3} sx={{ width: 400 }}>
       <Autocomplete
@@ -21,7 +20,7 @@ export default function Tags({
           isCustomData ? options : programType.map((option) => option.title)
         }
         onChange={(event, value) => handleChange(value)}
-        defaultValue={[isCustomData ? null : programType[0].title]}
+        // defaultValue={[isCustomData ? null : programType[0].title]}
         freeSolo
         variant="outlined"
         value={value}

@@ -56,7 +56,6 @@ export default function SimpleAccordion({ exercise, options, handleChange }) {
                   value={input.answer}
                   options={options}
                   handleChange={(value) => {
-                    console.log(value, "value");
                     handleChange(value, index);
                   }}
                   isMultiline={true}

@@ -1,7 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
+import { format } from "date-fns";
 import { useRouter } from "next/router";
 import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
+import Chip from "@mui/material/Chip";
+import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
 
 import withAuth from "../auth/withAuth";
 import { useUser } from "../auth/useUser";
@@ -15,11 +19,9 @@ import { url } from "../urlConfig";
 const columns = [
   { field: "index", headerName: "Index", width: 70 },
   { field: "firstName", headerName: "First Name", width: 120 },
-  { field: "lastName", headerName: "Last Name", width: 120 },
-  { field: "enquiredDate", headerName: "Enquired On", width: 140 },
   {
-    field: "appointmentDate",
-    headerName: "Consultation Date",
+    field: "email",
+    headerName: "Email",
     width: 150,
   },
   {
@@ -28,9 +30,40 @@ const columns = [
     width: 120,
   },
   {
+    field: "contactMethod",
+    headerName: "Contact Method",
+    width: 150,
+  },
+  {
+    field: "enquireDate",
+    headerName: "Enquired On",
+    width: 150,
+  },
+  {
+    field: "marketingConsent",
+    headerName: "Marketing Consent",
+    width: 140,
+  },
+  {
+    field: "isSignup",
+    headerName: "Signed Up",
+    type: "boolean",
+    width: 100,
+  },
+  {
     field: "goal",
     headerName: "Goal",
-    width: 300,
+    width: 400,
+    type: "array",
+    renderCell: (data) => {
+      return (
+        <Chip
+          variant="outlined"
+          color={"primary"}
+          label={data.formattedValue}
+        />
+      );
+    },
   },
 ];
 
@@ -42,8 +75,6 @@ const Leads = () => {
   const [snackbarSeverity, setSnackbarSeverity] = useState("");
   const [leads, setLeads] = useState([]);
   const [selectedLead, setSelectedLead] = useState({});
-  const [onboardData, setOnboardData] = useState([]);
-  const [userData, setUserData] = useState([]);
   const [loading, setLoading] = useState(false);
   const [jwtToken, setJwtToken] = useState();
 
@@ -75,7 +106,11 @@ const Leads = () => {
       openSnackBar(error);
     }
     let leads = await response.json();
+    leads.data.map((item) => {
+      item.enquireDate = format(new Date(item.enquireDate), "dd MMM yyyy");
+    });
     setLeads(leads.data);
+    openSnackBar(leads);
   }, []);
 
   useEffect(async () => {
@@ -99,23 +134,18 @@ const Leads = () => {
     setSnackbarOpen(true);
   };
 
-  const handleDrawer = () => {
-    userData.map((item) => {
-      item.questions.map((item2) => {
-        delete item2.answer;
-        delete item2.defaultValue;
-      });
-    });
-    setUserData([...userData]);
-    setOpen(!isOpen);
-  };
-
   const handleClose = (event, reason) => {
     if (reason === "clickaway") {
       return;
     }
 
     setSnackbarOpen(false);
+  };
+
+  const refresh = async () => {
+    setLoading(true);
+    await fetchLeads();
+    setLoading(false);
   };
 
   return (
@@ -145,7 +175,21 @@ const Leads = () => {
             >
               Leads
             </Typography>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: "center",
+                alignItems: "flex-start",
+                columnGap: 5,
+              }}
+            >
+              <Button variant="outlined" onClick={refresh}>
+                Refresh
+              </Button>
+            </Box>
           </Stack>
+
           <DataTable
             data={leads.map((l, index) => ({
               ...l,

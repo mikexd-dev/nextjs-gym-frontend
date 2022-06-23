@@ -20,15 +20,14 @@ import Progress from "../components/Progress";
 import Snackbar from "../components/Snackbar";
 import { url } from "../urlConfig";
 
-const packageDataInitialValue = { 
+const packageDataInitialValue = {
   name: "",
   type: "",
   price: "",
-  sessions: "1", 
+  sessions: "1",
   description: "",
 };
 const API_SUCCESS_STATUS = "success";
-
 
 const Packages = () => {
   const { user } = useUser();
@@ -47,8 +46,10 @@ const Packages = () => {
 
   const router = useRouter();
 
-  const isSubmitEnabled = Object.values(packageFormData).every(value => !!value);
-  
+  const isSubmitEnabled = Object.values(packageFormData).every(
+    (value) => !!value
+  );
+
   useEffect(() => {
     const handleRouteChange = (url, { shallow }) => {
       setIsLoading(true);
@@ -76,6 +77,7 @@ const Packages = () => {
     }
     let packages = await response.json();
     setPackages(packages.data);
+    openSnackBar(packages);
   }, []);
 
   useEffect(async () => {
@@ -123,9 +125,12 @@ const Packages = () => {
   const handlePackageFormChange = (property) => (e) => {
     const value = e?.target?.value ?? e;
     if (!value) return;
-    const packageData = { ...packageFormData, [property]: e?.target?.value ?? e};
+    const packageData = {
+      ...packageFormData,
+      [property]: e?.target?.value ?? e,
+    };
     setPackageFormData(packageData);
-  }
+  };
 
   const createNewPackage = async (body) => {
     try {
@@ -143,16 +148,16 @@ const Packages = () => {
       return { message: "Something goes wrong" };
     }
   };
-  
+
   const handleAddNewPackage = async () => {
     const response = await createNewPackage(packageFormData);
     openSnackBar(response);
     setPackageFormData(packageDataInitialValue);
     setDrawerOpen(false);
-    if(response?.status === API_SUCCESS_STATUS) {
+    if (response?.status === API_SUCCESS_STATUS) {
       await fetchPackages(jwtToken);
     }
-  }
+  };
 
   const updatePackage = async (body) => {
     try {
@@ -165,6 +170,7 @@ const Packages = () => {
         body: JSON.stringify(body),
       });
       const result = await response.json();
+      openSnackBar(result);
       return result;
     } catch {
       return { message: "Something went wrong" };
@@ -172,22 +178,27 @@ const Packages = () => {
   };
 
   const handleUpdatePackage = async () => {
+    setIsLoading(true);
     const response = await updatePackage(packageFormData);
     openSnackBar(response);
     setDrawerOpen(false);
     setPackageFormData(packageDataInitialValue);
-    if(response?.status === API_SUCCESS_STATUS) {
+    if (response?.status === API_SUCCESS_STATUS) {
       await fetchPackages(jwtToken);
     }
-  }
+    setIsLoading(false);
+  };
 
   const handleEditClick = (id) => () => {
-    const selectedPackage = packages.find((exercisePackage) => exercisePackage.id === id);
+    const selectedPackage = packages.find(
+      (exercisePackage) => exercisePackage.id === id
+    );
     setPackageFormData(selectedPackage);
     setDrawerOpen(true);
   };
 
   const deletePackage = async () => {
+    setIsLoading(true);
     try {
       const response = await fetch(`${url}/packages/${selectedPackageId}`, {
         method: "DELETE",
@@ -200,19 +211,26 @@ const Packages = () => {
       openSnackBar(result);
       if (response.ok) {
         await fetchPackages(jwtToken);
-      };
+      }
     } catch {
-      openSnackBar({message: "Something went wrong"});
+      openSnackBar({ message: "Something went wrong" });
     }
     setSelectedPackageId("");
     closePopper();
+    setIsLoading(false);
   };
 
-  const handleDeletePackage = (id) => (event)  => {
+  const handleDeletePackage = (id) => (event) => {
     setSelectedPackageId(id);
     setAnchorEl(event.currentTarget);
     setPopperOpen(true);
-  }
+  };
+
+  const refresh = async () => {
+    setIsLoading(true);
+    await fetchPackages();
+    setIsLoading(false);
+  };
 
   const columns = [
     { field: "index", headerName: "Index", width: 70 },
@@ -283,9 +301,22 @@ const Packages = () => {
             >
               Packages
             </Typography>
-            <Button variant="contained" onClick={() => setDrawerOpen(true)}>
-              New Package
-            </Button>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: "center",
+                alignItems: "flex-start",
+                columnGap: 5,
+              }}
+            >
+              <Button variant="outlined" onClick={refresh}>
+                Refresh
+              </Button>
+              <Button variant="contained" onClick={() => setDrawerOpen(true)}>
+                New Package
+              </Button>
+            </Box>
           </Stack>
 
           <Backdrop toggleDrawer={() => setDrawerOpen} isOpen={isDrawerOpen}>
@@ -312,7 +343,7 @@ const Packages = () => {
                     fontWeight: "bold",
                   }}
                 >
-                 {packageFormData.id ? "Update Package" : "New Package"}
+                  {packageFormData.id ? "Update Package" : "New Package"}
                 </Typography>
                 <Button onClick={handleCloseDrawer}>
                   <MdClose size={40} />

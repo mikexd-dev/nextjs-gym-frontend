@@ -15,7 +15,7 @@ export default function BasicSelect({
       <Autocomplete
         disablePortal
         onChange={(event, newValue) => {
-          console.log(newValue, event);
+          // console.log(newValue, event);
           handleChange(newValue);
         }}
         value={value}

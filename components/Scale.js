@@ -11,7 +11,9 @@ export default function SliderSizes({ label, value, handleChange }) {
         {label}
       </Typography>
       <Slider
-        defaultValue={50}
+        defaultValue={5}
+        min={1}
+        max={10}
         aria-label="Default"
         valueLabelDisplay="auto"
         value={value}

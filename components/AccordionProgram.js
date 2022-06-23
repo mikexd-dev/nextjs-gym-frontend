@@ -40,6 +40,16 @@ const columns = [
     width: 70,
   },
   {
+    field: "tempo",
+    headerName: "Tempo",
+    width: 100,
+  },
+  {
+    field: "restTimeSecs",
+    headerName: "Rest Time",
+    width: 70,
+  },
+  {
     field: "notes",
     headerName: "Notes",
     width: 150,
@@ -55,7 +65,7 @@ export default function AccordionProgram({
     <div>
       {programs &&
         programs.map((program, index) => (
-          <Accordion defaultExpanded={true}>
+          <Accordion defaultExpanded={index === 0 ? true : false} key={index}>
             <AccordionSummary
               expandIcon={<ExpandMoreIcon />}
               aria-controls="panel1a-content"
@@ -71,9 +81,14 @@ export default function AccordionProgram({
                 <Typography sx={{ fontWeight: "bold" }}>
                   Program Name: [{program.programName}]
                 </Typography>
-                <Typography sx={{ color: "green", fontWeight: "bold" }}>
+                <Typography
+                  sx={{
+                    color: index === 0 ? "green" : "red",
+                    fontWeight: "bold",
+                  }}
+                >
                   {" "}
-                  Active
+                  {index === 0 ? "Active" : "Inactive"}
                 </Typography>
               </Box>
             </AccordionSummary>
@@ -170,14 +185,14 @@ export default function AccordionProgram({
                   </Box>
                 </Box>
                 <Divider style={{ width: "100%", margin: "20px 0" }} />
-                {exercises.map((day, dayIndex) => {
+                {exercises[index]?.map((day, dayIndex) => {
                   return (
                     <div
                       style={{ height: 550, width: "100%", paddingBottom: 50 }}
                     >
                       <Typography sx={{ fontWeight: "bold", paddingBottom: 2 }}>
-                        {program.days[dayIndex].day}:{" "}
-                        {program.days[dayIndex].durationMins} min
+                        {program.days[dayIndex]?.day}:{" "}
+                        {program.days[dayIndex]?.estTimeInMin} min
                       </Typography>
                       <DataGrid
                         rows={day}

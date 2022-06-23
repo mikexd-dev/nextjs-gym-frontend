@@ -338,7 +338,7 @@ const Exercises = () => {
     setLoading(true);
     // moment.utc(Date.now()).local().format('DD/MM/YYYY HH:MM'))
     const exerciseResult = await createExercise(requestBody);
-    console.log(exerciseResult, "exercise result");
+    // console.log(exerciseResult, "exercise result");
     await fetchExercises(jwtToken);
     handleDrawer();
     setLoading(false);

@@ -20,6 +20,72 @@ import CustomerDrawer from "../components/CustomerDrawer";
 import { url } from "../urlConfig";
 
 const trainerFormDataInitialState = { name: "", expertise: "" };
+const daysContent = [
+  { key: "trainingName", display: "Training Name", type: "text-input" },
+  {
+    key: "dayOverview",
+    display: "Training Overview",
+    type: "text-input",
+  },
+  {
+    key: "day",
+    display: "Detailed Day training",
+    type: "exercise-selection",
+    parts: [
+      {
+        key: "warmup",
+        type: "warmup",
+        display: "Warmup",
+        exercises: [],
+      },
+      {
+        key: "workout_a",
+        type: "workout",
+        display: "A",
+        exercises: [],
+      },
+    ],
+  },
+];
+const tabColumns = [
+  {
+    id: 1,
+    key: "programInfo",
+    headerName: "Programme Info",
+    content: [
+      { key: "programName", display: "Program Name", type: "text-input" },
+      { key: "programSubName", display: "Program SubName", type: "text-input" },
+      { key: "dateStarted", display: "StartingDate", type: "date-picker" },
+      {
+        key: "totalNumberOfWeeks",
+        display: "Number of Weeks",
+        type: "text-input",
+      },
+      {
+        key: "programType",
+        display: "Program Type",
+        type: "tags-input",
+      },
+      {
+        key: "programNature",
+        display: "Program Nature",
+        type: "tags-input",
+      },
+      {
+        key: "programOverview",
+        display: "Program Overview",
+        type: "text-input",
+      },
+    ],
+  },
+  {
+    id: 2,
+    key: "day1",
+    headerName: "Day 1",
+    type: "days",
+    content: daysContent,
+  },
+];
 
 const Trainers = () => {
   const { user } = useUser();
@@ -37,7 +103,8 @@ const Trainers = () => {
   const [selectedCustomerId, setSelectedCustomerId] = useState("");
   const [jwtToken, setJwtToken] = useState();
   const [anchorEl, setAnchorEl] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [config, setConfig] = useState({});
+  const [tabColumnData, setTabColumnData] = useState(tabColumns);
 
   useEffect(() => {
     const handleRouteChange = (url, { shallow }) => {
@@ -82,24 +149,38 @@ const Trainers = () => {
     const data = await response.json();
     const customerData = data?.data;
     customerData.map((item) => {
-      // item.name =
-      //   item?.consultation[0]?.basicInfo?.firstName +
-      //   " " +
-      //   item?.consultation[0]?.basicInfo?.lastName;
-      // item.email = item?.consultation[0]?.basicInfo?.email;
-      // item.phone = item?.consultation[0]?.basicInfo?.phone;
-      let totalSessions = 0;
-      item.contract.map((contract) => {
-        totalSessions += Number(contract.package.sessions);
-      });
-      item.sessionsLeft = `${
-        totalSessions - item.sessions.length
-      }/${totalSessions}`;
-      item.sessionsRemaining = totalSessions - item.sessions.length;
+      item = formatContractData(item);
     });
-    console.log(customerData, " consult");
+    // console.log(customerData, " consult");
 
     setCustomers(data.data);
+  }, []);
+
+  const formatContractData = (item) => {
+    let totalSessions = 0;
+    item.contract.map((contract) => {
+      totalSessions += Number(contract.package.sessions);
+    });
+    item.sessionsLeft = `${
+      totalSessions - item.sessions.length
+    }/${totalSessions}`;
+    item.sessionsRemaining = totalSessions - item.sessions.length;
+    return item;
+  };
+
+  const fetchConfig = useCallback(async (token, query) => {
+    const response = await fetch(`${url}/config`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      openSnackBar(error);
+    }
+    let data = await response.json();
+    let result = data.data[0];
+    setConfig(result);
   }, []);
 
   useEffect(async () => {
@@ -108,9 +189,10 @@ const Trainers = () => {
     if (token) {
       setJwtToken(token);
       await fetchCustomers(token);
+      await fetchConfig(token);
     }
     setIsLoading(false);
-  }, [fetchCustomers]);
+  }, [fetchCustomers, fetchConfig]);
 
   const handleCloseSnackbar = (event, reason) => {
     if (reason === "clickaway") {
@@ -119,45 +201,6 @@ const Trainers = () => {
 
     setSnackbarOpen(false);
   };
-
-  const handleCloseDrawer = () => {
-    setDrawerOpen(false);
-    setCustomerFormData(trainerFormDataInitialState);
-  };
-
-  const handleCustomerFormChange = (property) => (e) => {
-    const customerData = { ...customerFormData, [property]: e.target.value };
-    setCustomerFormData(customerData);
-    console.log(customerData, "customerdata");
-    // const isAllFilled = !!customerData.name && !!customerData.expertise;
-    setIsSubmitEnabled(true);
-  };
-
-  // const createNewTrainer = async (body) => {
-  //   const response = await fetch(`${url}/trainers`, {
-  //     method: "POST",
-  //     headers: {
-  //       Authorization: `Bearer ${jwtToken}`,
-  //       "Content-Type": "application/json",
-  //     },
-  //     body: JSON.stringify(body),
-  //   });
-  //   if (!response.ok) {
-  //     const error = await response.json();
-  //     openSnackBar(error);
-  //     setTrainerFormData(trainerFormDataInitialState);
-  //     return;
-  //   }
-  //   const trainerCreated = await response.json();
-  //   openSnackBar(trainerCreated);
-  // };
-
-  // const handleAddNewTrainer = async () => {
-  //   await createNewTrainer(trainerFormData);
-  //   setDrawerOpen(false);
-  //   setTrainerFormData(trainerFormDataInitialState);
-  //   await fetchTrainers(jwtToken);
-  // };
 
   const closePopper = () => {
     setPopperOpen(false);
@@ -189,35 +232,10 @@ const Trainers = () => {
     setPopperOpen(true);
   };
 
-  const editCustomer = async (body) => {
-    const response = await fetch(`${url}/customers/${trainerFormData.id}`, {
-      method: "PATCH",
-      headers: {
-        Authorization: `Bearer ${jwtToken}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
-    });
-    if (!response.ok) {
-      const error = await response.json();
-      openSnackBar(error);
-      setTrainerFormData(trainerFormDataInitialState);
-      return;
-    }
-    const trainerUpdated = await response.json();
-    openSnackBar(trainerUpdated);
-  };
-
-  const handleUpdateCustomer = async () => {
-    await editCustomer(trainerFormData);
-    setDrawerOpen(false);
-    setTrainerFormData(trainerFormDataInitialState);
-    await fetchCustomers(jwtToken);
-  };
-
   const handleMoreClick = (id) => () => {
     const selectedCustomer = customers.find((customer) => customer.id === id);
     setCustomerFormData(selectedCustomer);
+    router.push(`customers/${selectedCustomer.id}`);
     // const isAllFilled = !!selectedTrainer.name && !!selectedTrainer.expertise;
     setIsSubmitEnabled(true);
     setDrawerOpen(true);
@@ -257,9 +275,10 @@ const Trainers = () => {
   ];
 
   const refresh = async () => {
-    setLoading(true);
+    setIsLoading(true);
     await fetchCustomers();
-    setLoading(false);
+    await fetchConfig();
+    setIsLoading(false);
   };
 
   return (
@@ -303,17 +322,6 @@ const Trainers = () => {
               </Button>
             </Box>
           </Stack>
-          <CustomerDrawer
-            setDrawerOpen={setDrawerOpen}
-            isDrawerOpen={isDrawerOpen}
-            title={customerFormData.id ? "Customer Profile" : ""}
-            formData={customerFormData}
-            submitButtonLabel={customerFormData.id ? "Update" : "Submit"}
-            isSubmitEnabled={isSubmitEnabled}
-            onChange={handleCustomerFormChange}
-            onSubmit={handleUpdateCustomer}
-            onDrawerClose={handleCloseDrawer}
-          />
 
           <DataTable
             data={customers.map((customer, index) => ({

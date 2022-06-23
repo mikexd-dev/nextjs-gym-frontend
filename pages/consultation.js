@@ -5,6 +5,7 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Stack from "@mui/material/Stack";
 import { MdClose } from "react-icons/md";
+import { format } from "date-fns";
 import { GrFormRefresh } from "react-icons/gr";
 import { IconContext } from "react-icons";
 import ListItemIcon from "@mui/material/ListItemIcon";
@@ -119,16 +120,16 @@ const Consultation = () => {
       openSnackBar(error);
     }
     let consultations = await response.json();
-    console.log(consultations, "consult");
+    // console.log(consultations, "consult");
     const rows = [];
     consultations.data.map((item) => {
       const temp = {
         id: item.id,
-        dateCreated: item.dateCreated,
+        dateCreated: format(new Date(item.dateCreated), "dd MMM yyyy"),
         email: item.basicInfo.email,
         firstName: item.basicInfo.firstName,
         lastName: item.basicInfo.lastName,
-        isRecurring: item.basicInfo.isRecurring.answer,
+        isRecurring: item.basicInfo.isRecurring?.answer,
         phone: item.basicInfo.phone,
         isSignup: item.packageQuestions.isSignup,
       };
@@ -176,12 +177,15 @@ const Consultation = () => {
       const error = await response.json();
       openSnackBar(error);
     }
-    let leads = await response.json();
-    leads.data.map((item) => {
-      item.label = `${item.firstName} ${item.lastName} - ${item.phone}`;
+    let leadsData = await response.json();
+    openSnackBar(leadsData);
+    leadsData = leadsData.data.filter((value, index) => {
+      if (!value.isSignup) return true;
     });
-    setLeads(leads.data);
-    openSnackBar(leads);
+    leadsData.map((item) => {
+      item.label = `${item.firstName} - ${item.phone}`;
+    });
+    setLeads(leadsData);
   }, []);
 
   useEffect(async () => {
@@ -209,7 +213,7 @@ const Consultation = () => {
 
   const handleChange = (value, index, position, otherAnswer) => {
     const stepperData = userData;
-    console.log(index, position, value, otherAnswer, stepperData);
+    // console.log(index, position, value, otherAnswer, stepperData);
 
     if (!otherAnswer) {
       if (stepperData[index]?.questions[position]?.type === "toggle") {
@@ -245,16 +249,7 @@ const Consultation = () => {
   };
 
   const createConsultation = async (body) => {
-    // console.log(
-    //   body,
-    //   "consult body",
-    //   body.consultationId,
-    //   body.dateCreated,
-    //   body.dateModified,
-    //   selectedLead?.id
-    // );
-
-    console.log(body, "consult requestBody");
+    // console.log(body, "consult requestBody");
     const response = await fetch(`${url}/consultation`, {
       method: "POST",
       headers: {
@@ -269,6 +264,26 @@ const Consultation = () => {
     }
     let consultation = await response.json();
     return consultation;
+  };
+
+  const updateLead = async (leadData) => {
+    // console.log(leadData, "lead body");
+    const response = await fetch(`${url}/leads/${leadData.id}`, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${jwtToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        isSignup: true,
+      }),
+    });
+    if (!response.ok) {
+      let error = await response.json();
+      return error;
+    }
+    let lead = await response.json();
+    return lead;
   };
 
   const createCustomer = async (body) => {
@@ -292,7 +307,7 @@ const Consultation = () => {
         packageId: body.packageQuestions.typeOfPackage,
       },
     };
-    console.log(reqBody, "for customers");
+    // console.log(reqBody, "for customers");
     // body.data.map((item) => {
     //   if (item.key === "basicInfo") {
     //     item.questions.map((item2) => {
@@ -336,13 +351,10 @@ const Consultation = () => {
 
   const submitResult = async () => {
     setLoading(true);
-    console.log(userData, "userData");
+    // console.log(userData, "userData");
 
     // request body
-    const date = new Date().toLocaleString("en-SG", {
-      timeZone: "Asia/Singapore",
-      hour12: false,
-    });
+    const date = new Date().toISOString();
     const requestBody = {
       dateCreated: date,
       dateModified: date,
@@ -366,14 +378,20 @@ const Consultation = () => {
     requestBody.consultationId = consultationResult?.data?.id;
     // if() // if no lead
     requestBody.leadsId = selectedLead?.id;
-    console.log(requestBody, "after consultation", checkCustomerSignup());
+    // console.log(requestBody, "after consultation", checkCustomerSignup());
     if (checkCustomerSignup()) {
       const customerResult = await createCustomer(requestBody);
+      if (selectedLead?.id) {
+        const leadResult = await updateLead(selectedLead);
+        openSnackBar(leadResult);
+      }
+
       openSnackBar(customerResult);
     } else {
       openSnackBar(consultationResult);
     }
     await fetchConsultations(jwtToken);
+    await fetchLeads(jwtToken);
     handleDrawer();
     setLoading(false);
   };

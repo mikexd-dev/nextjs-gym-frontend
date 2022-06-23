@@ -10,12 +10,12 @@ export default function DataTable({ data, columns }) {
         pageSize={10}
         rowsPerPageOptions={[5]}
         components={{ Toolbar: GridToolbar }}
-        componentsProps={{
-          toolbar: {
-            showQuickFilter: true,
-            quickFilterProps: { debounceMs: 500 },
-          },
-        }}
+        // componentsProps={{
+        //   toolbar: {
+        //     showQuickFilter: true,
+        //     quickFilterProps: { debounceMs: 500 },
+        //   },
+        // }}
         onSelectionModelChange={(ids) => {
           const selectedIDs = new Set(ids);
           console.log(selectedIDs);

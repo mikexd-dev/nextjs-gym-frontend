@@ -103,7 +103,7 @@ const Booking = () => {
     }
     let data = await response.json();
     openSnackBar(data);
-    console.log(data.data, "customers");
+    // console.log(data.data, "customers");
     data.data.map((item) => {
       const { firstName, lastName } = item.consultation[0].basicInfo;
       item.label = firstName + " " + lastName;
@@ -142,9 +142,9 @@ const Booking = () => {
   };
 
   const onDateChange = (date) => {
-    console.log(date, "date");
-    console.log(date.toISOString());
-    console.log(getDateTime());
+    // console.log(date, "date");
+    // console.log(date.toISOString());
+    // console.log(getDateTime());
     setDate(date);
   };
 
@@ -157,7 +157,7 @@ const Booking = () => {
   };
 
   const checkAvailability = async () => {
-    console.log(getDateTime());
+    // console.log(getDateTime());
     setLoading(true);
     const response = await fetch(`${url}/booking/get`, {
       method: "POST",
@@ -173,28 +173,67 @@ const Booking = () => {
     }
     let data = await response.json();
     openSnackBar(data);
-    console.log(data.data, "booking");
+    // console.log(data.data, "booking");
     setBooking(data.data);
     setLoading(false);
   };
 
   const handleCustomerChange = (value) => {
-    console.log(value);
+    // console.log(value);
     setActiveCustomers(value);
+  };
+
+  const updateCustomersBooking = async (customer, date, start, end) => {
+    // console.log(customer, "selectedCustomer");
+    customer.bookings.push({
+      date,
+      start,
+      end,
+    });
+
+    const response = await fetch(`${url}/customers/${customer.id}`, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${jwtToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        bookings: customer.bookings,
+      }),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      openSnackBar(error);
+    }
+    let data = await response.json();
+    return data;
   };
 
   const bookAppointment = async (slotIndex) => {
     setLoading(true);
-    console.log(slotIndex, activeCustomers, getDateTime());
+    // console.log(slotIndex, activeCustomers, getDateTime());
     const body = booking;
     body.id = getDateTime();
-    activeCustomers.map((customer) => {
+    activeCustomers.map(async (customer) => {
       const { firstName, lastName } = customer.consultation[0]?.basicInfo;
       body.slots[slotIndex].customersBooked.push({
         id: customer.id,
         name: firstName + " " + lastName,
       });
       body.slots[slotIndex].totalAvailableSlots--;
+      // console.log(
+      //   customer,
+      //   body.id,
+      //   body.slots[slotIndex].start,
+      //   body.slots[slotIndex].end,
+      //   "wola"
+      // );
+      await updateCustomersBooking(
+        customer,
+        body.id,
+        body.slots[slotIndex].start,
+        body.slots[slotIndex].end
+      );
     });
 
     const response = await fetch(`${url}/booking`, {
@@ -210,18 +249,18 @@ const Booking = () => {
       openSnackBar(error);
     }
     let data = await response.json();
+
     openSnackBar(data);
-    console.log(data.data, "booking");
     setBooking(data.data);
     setLoading(false);
   };
 
   const handleChange = (value, slotIndex, qnIndex) => {
-    console.log(value, slotIndex, qnIndex);
+    // console.log(value, slotIndex, qnIndex);
     const temp = booking;
     const key = temp.slots[slotIndex].questions[qnIndex].key;
     temp.slots[slotIndex][key] = value;
-    console.log(temp);
+    // console.log(temp);
     setBooking({ ...temp });
   };
 

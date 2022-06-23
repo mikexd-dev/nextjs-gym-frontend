@@ -18,7 +18,6 @@ export const mapUserData = async (user) => {
   let exp = user?.multiFactor?.user?.stsTokenManager?.expirationTime;
 
   if (Date.now() >= exp) {
-    console.log("gonna expire");
     token = await user.getIdToken(true);
   }
   return {

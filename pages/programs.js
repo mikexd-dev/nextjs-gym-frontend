@@ -266,7 +266,7 @@ const Programs = () => {
       openSnackBar(error);
     }
     let data = await response.json();
-    console.log(data);
+    // console.log(data);
     data.data.map((item) => {
       item.label = item.name;
     });
@@ -300,7 +300,7 @@ const Programs = () => {
     }
     let data = await response.json();
     openSnackBar(data);
-    console.log(data.data, "customers");
+    // console.log(data.data, "customers");
     data.data.map((item) => {
       const { firstName, lastName } = item.consultation[0].basicInfo;
       item.label = firstName + " " + lastName;
@@ -322,7 +322,7 @@ const Programs = () => {
       return error;
     }
     let program = await response.json();
-    console.log(program, "program result");
+    // console.log(program, "program result");
     return program;
   };
 
@@ -367,7 +367,7 @@ const Programs = () => {
     //     delete item2.defaultValue;
     //   });
     // });
-    console.log(initialState);
+    // console.log(initialState);
     setProgramTabs([...initialState]);
     setOpen(!isOpen);
   };
@@ -389,16 +389,16 @@ const Programs = () => {
     qnIndex
   ) => {
     const data = programTabs;
-    console.log(
-      index,
-      position,
-      data,
-      value,
-      partIndex,
-      exerciseIndex,
-      qnIndex,
-      "wow"
-    );
+    // console.log(
+    //   index,
+    //   position,
+    //   data,
+    //   value,
+    //   partIndex,
+    //   exerciseIndex,
+    //   qnIndex,
+    //   "wow"
+    // );
 
     data[index].content[position].parts[partIndex].exercises[
       exerciseIndex
@@ -408,21 +408,21 @@ const Programs = () => {
 
   const handleChange = (value, index, position) => {
     const data = programTabs;
-    console.log(index, position, data, value);
+    // console.log(index, position, data, value);
     data[index].content[position].answer = value;
     setProgramTabs([...data]);
   };
 
   const handleAddExercise = (partIndex, exerciseIndex, index, position) => {
     let data = programTabs;
-    console.log(
-      index,
-      position,
-      data,
-      partIndex,
-      exerciseIndex,
-      data[index].content[position].parts[partIndex].exercises.length
-    );
+    // console.log(
+    //   index,
+    //   position,
+    //   data,
+    //   partIndex,
+    //   exerciseIndex,
+    //   data[index].content[position].parts[partIndex].exercises.length
+    // );
     let temp = {
       key: "exercise_1",
       display: "Exercise 1",
@@ -501,9 +501,9 @@ const Programs = () => {
     let num = exerciseIndex + 2;
     temp.key = temp.key.slice(0, -1) + num;
     temp.display = temp.display.slice(0, -1) + num;
-    console.log(data, "old data");
+    // console.log(data, "old data");
     data[index].content[position].parts[partIndex].exercises.push(temp);
-    console.log(data, "new data");
+    // console.log(data, "new data");
     // data[index].content[position].answer = value;
     setProgramTabs([...data]);
   };
@@ -513,7 +513,7 @@ const Programs = () => {
     let lastPartDisplay =
       data[index].content[position].parts[partIndex].display;
     let lastPartKey = data[index].content[position].parts[partIndex].key;
-    console.log(index, position, data, partIndex, lastPartDisplay);
+    // console.log(index, position, data, partIndex, lastPartDisplay);
     let tempPart = {
       key: "workout_a",
       display: "Workout Part A",
@@ -566,13 +566,13 @@ const Programs = () => {
     };
     let chars = ["A", "B", "C", "D", "E", "F", "G"];
     const char = chars[chars.indexOf(lastPartDisplay.slice(-1)) + 1];
-    console.log(
-      lastPartDisplay,
-      lastPartDisplay.slice(0, -1),
-      chars.indexOf(lastPartDisplay.slice(0, -1)),
-      char,
-      "char"
-    );
+    // console.log(
+    //   lastPartDisplay,
+    //   lastPartDisplay.slice(0, -1),
+    //   chars.indexOf(lastPartDisplay.slice(0, -1)),
+    //   char,
+    //   "char"
+    // );
     tempPart.key = lastPartKey.slice(0, -1) + char.toLowerCase();
     tempPart.display = lastPartDisplay.slice(0, -1) + char;
     data[index].content[position].parts.push(tempPart);
@@ -581,7 +581,7 @@ const Programs = () => {
 
   const handleRemoveExercise = (partIndex, exerciseIndex, index, position) => {
     const data = programTabs;
-    console.log(index, position, data, partIndex, exerciseIndex);
+    // console.log(index, position, data, partIndex, exerciseIndex);
     if (exerciseIndex !== 0) {
       data[index].content[position].parts[partIndex].exercises.splice(
         exerciseIndex,
@@ -589,30 +589,27 @@ const Programs = () => {
       );
       let count = 1;
       data[index].content[position].parts[partIndex].exercises.map((item) => {
-        console.log(item.key, count);
+        // console.log(item.key, count);
         item.key = item.key.slice(0, -1) + count;
         item.display = item.display.slice(0, -1) + count;
         count += 1;
       });
-      console.log(data, "data");
+      // console.log(data, "data");
       setProgramTabs([...data]);
     }
   };
 
   const handleRemovePart = (value, index, position) => {
     const data = programTabs;
-    console.log(index, position, data, value);
+    // console.log(index, position, data, value);
     data[index].content[position].parts.splice(value, 1);
     setProgramTabs([...data]);
   };
 
   const submitResult = async () => {
     setLoading(true);
-    console.log(programTabs, "new program");
-    const date = new Date().toLocaleString("en-SG", {
-      timeZone: "Asia/Singapore",
-      hour12: false,
-    });
+    // console.log(programTabs, "new program");
+    const date = new Date().toISOString();
 
     let requestBody = {
       days: [],
@@ -624,23 +621,27 @@ const Programs = () => {
         const day = Number(item.headerName.slice(-1)) - 1;
         requestBody.days[day] = {
           day: item.headerName,
+          estTime: 0,
+          estTimeInMin: "",
         };
-        console.log(day, "day");
+        // console.log(day, "day");
         item.content.map((question, dayIndex) => {
-          console.log(question, "question", requestBody);
+          // console.log(question, "question", requestBody);
           if (question.key === "day") {
             requestBody.days[day].workout = [];
             question.parts.map((part, partIndex) => {
               requestBody.days[day].workout[partIndex] = {
                 exercisePart: part.display,
+                estTime: part.estTime,
                 exercises: [],
               };
+              requestBody.days[day].estTime += Number(part.estTime);
               part.exercises.map((exercise, exerciseIndex) => {
                 requestBody.days[day].workout[partIndex].exercises[
                   exerciseIndex
                 ] = {};
                 exercise.questions.map((item) => {
-                  console.log(day, item, requestBody);
+                  // console.log(day, item, requestBody);
                   requestBody.days[day].workout[partIndex].exercises[
                     exerciseIndex
                   ][item.key] = item.answer;
@@ -649,6 +650,11 @@ const Programs = () => {
                 });
               });
             });
+            requestBody.days[day].estTimeInMin =
+              Math.floor(Number(requestBody.days[day].estTime) / 60) +
+              "m" +
+              (Number(requestBody.days[day].estTime) % 60) +
+              "s";
           } else {
             if (question.answer)
               requestBody.days[day][question.key] = question.answer;
@@ -662,9 +668,9 @@ const Programs = () => {
     });
 
     !requestBody.dateStarted ? (requestBody.dateStarted = date) : null;
-    console.log(requestBody, "final");
+    // console.log(requestBody, "final");
     const programResult = await createProgram(requestBody);
-    console.log(activeCustomers, "activeCustomers");
+    // console.log(activeCustomers, "activeCustomers");
     const promises = [];
     activeCustomers.map((customer) => {
       // update customer's program
@@ -679,7 +685,7 @@ const Programs = () => {
       );
     });
     const result = await Promise.all(promises);
-    console.log(result, "customer result");
+    // console.log(result, "customer result");
     openSnackBar(result[0]);
 
     await fetchPrograms(jwtToken);
@@ -688,7 +694,7 @@ const Programs = () => {
   };
 
   const updateCustomerProgramme = async (requestBody, id) => {
-    console.log(id, "updating customer");
+    // console.log(id, "updating customer");
     const response = await fetch(`${url}/customers/${id}`, {
       method: "PATCH",
       headers: {
@@ -704,7 +710,7 @@ const Programs = () => {
       return error;
     }
     let updateResult = await response.json();
-    console.log(updateResult, "updateResult");
+    // console.log(updateResult, "updateResult");
     return updateResult;
   };
 
@@ -717,7 +723,7 @@ const Programs = () => {
     });
     if (Number(num) < length) {
       setDaysToDelete(length - Number(num));
-      console.log("do nothing", length - Number(num));
+      // console.log("do nothing", length - Number(num));
       openDialog(length - Number(num));
     } else {
       const temp = [...programTabs];
@@ -729,7 +735,7 @@ const Programs = () => {
           daysCount++;
         }
       });
-      console.log(daysCount);
+      // console.log(daysCount);
       for (let i = 1; i <= count; i++) {
         let sum = daysCount + i;
         temp.push({
@@ -860,7 +866,7 @@ const Programs = () => {
   };
 
   const handleCustomerChange = (value) => {
-    console.log(value);
+    // console.log(value);
     setActiveCustomers(value);
   };
 
@@ -877,14 +883,14 @@ const Programs = () => {
   };
 
   const handleDialogClose = async (isAction, daysNum) => {
-    console.log(isAction, "isremove", dialogData, "woo", daysNum);
+    // console.log(isAction, "isremove", dialogData, "woo", daysNum);
     if (isAction === true) {
       setLoading(true);
       let temp = programTabs;
       for (let i = 0; i < daysToDelete; i++) {
         temp.pop();
       }
-      console.log(temp);
+      // console.log(temp);
       setProgramTabs([...temp]);
       setDaysToDelete(0);
       setDays(daysNum);
@@ -897,7 +903,7 @@ const Programs = () => {
     setValue(newValue);
   };
 
-  console.log(programTabs, "programTabs");
+  // console.log(programTabs, "programTabs");
 
   return (
     <div>

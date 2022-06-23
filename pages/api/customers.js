@@ -21,7 +21,7 @@ export default (req, res) => {
         });
       break;
     case "POST":
-      console.log(body, "reqBody");
+      // console.log(body, "reqBody");
       fetch(`${url}/customers`, {
         headers,
         method,

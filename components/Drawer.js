@@ -58,6 +58,9 @@ const adminmMenu = [
     path: "/consultation",
     role: "admin",
   },
+];
+
+const trainingMenu = [
   {
     display: "Customers",
     path: "/customers",
@@ -68,24 +71,21 @@ const adminmMenu = [
     path: "/booking",
     role: "admin",
   },
-];
-
-const trainingMenu = [
-  {
-    display: "Programs",
-    path: "/programs",
-    role: "admin",
-  },
-  {
-    display: "Exercises",
-    path: "/exercises",
-    role: "admin",
-  },
-  {
-    display: "Exercise Config",
-    path: "/exercise-config",
-    role: "admin",
-  },
+  // {
+  //   display: "Programs",
+  //   path: "/programs",
+  //   role: "admin",
+  // },
+  // {
+  //   display: "Exercises",
+  //   path: "/exercises",
+  //   role: "admin",
+  // },
+  // {
+  //   display: "Exercise Config",
+  //   path: "/exercise-config",
+  //   role: "admin",
+  // },
 ];
 
 const settings = ["Logout"];
@@ -213,11 +213,10 @@ export default function ClippedDrawer({ children }) {
                   >
                     <ListItemIcon>
                       {obj.path === "/packages" && <GiTakeMyMoney />}
-                      {obj.path === "/customers" && <FaUser />}
+
                       {obj.path === "/trainers" && <FaUserSecret />}
                       {obj.path === "/leads" && <FaUserPlus />}
                       {obj.path === "/consultation" && <FaUserTie />}
-                      {obj.path === "/booking" && <BsFillCalendarPlusFill />}
                     </ListItemIcon>
                     <ListItemText primary={obj.display} />
                   </ListItem>
@@ -231,9 +230,11 @@ export default function ClippedDrawer({ children }) {
                   <ListItem
                     button
                     key={obj.display}
-                    selected={router.asPath === obj.path}
+                    selected={router.asPath.includes(obj.path)}
                   >
                     <ListItemIcon>
+                      {obj.path === "/customers" && <FaUser />}
+                      {obj.path === "/booking" && <BsFillCalendarPlusFill />}
                       {obj.path === "/exercises" && <CgGym />}
                       {obj.path === "/programs" && <GiGymBag />}
                       {obj.path === "/exercise-config" && <MdSettings />}

@@ -19,7 +19,7 @@ export default function AccordionContract({
     <div>
       {contracts &&
         contracts.map((contract, index) => (
-          <Accordion defaultExpanded={true}>
+          <Accordion defaultExpanded={true} key={index}>
             <AccordionSummary
               expandIcon={<ExpandMoreIcon />}
               aria-controls="panel1a-content"
@@ -33,12 +33,7 @@ export default function AccordionContract({
                 }}
               >
                 <Typography sx={{ fontWeight: "bold" }}>
-                  Contract Start Date: [
-                  {contract.startDate.substring(
-                    0,
-                    contract.startDate.indexOf(",")
-                  )}
-                  ]
+                  Contract Start Date: [{contract.startDate}]
                 </Typography>
                 <Typography sx={{ color: "green", fontWeight: "bold" }}>
                   {" "}
