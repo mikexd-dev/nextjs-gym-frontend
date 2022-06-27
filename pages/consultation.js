@@ -299,7 +299,7 @@ const Consultation = () => {
       contractData: {
         startDate: body.dateCreated,
         purchasedDate: body.dateCreated,
-        endDate: body.dateCreated, // TODO
+        endDate: addMonths(body.dateCreated, 3),
         addOnSessions: 0,
         specialRequest: body.packageQuestions.specialRequests,
         paid: true,

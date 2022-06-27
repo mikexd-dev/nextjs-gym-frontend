@@ -1,6 +1,6 @@
 import { useRouter } from "next/router";
 import { useState, useEffect, useCallback } from "react";
-import { format } from "date-fns";
+import { format, addMonths, addWeeks } from "date-fns";
 import Typography from "@mui/material/Typography";
 import Breadcrumbs from "@mui/material/Breadcrumbs";
 import Link from "next/link";
@@ -99,6 +99,7 @@ const Customer = () => {
   const [tabColumnData, setTabColumnData] = useState(tabColumns);
   const [newMeasurement, setNewMeasurement] = useState({});
   const [newContract, setNewContract] = useState({});
+  const [packages, setPackages] = useState([]);
 
   const { pid } = router.query;
 
@@ -169,6 +170,21 @@ const Customer = () => {
     setCustomer(customerData);
   }, []);
 
+  const fetchPackages = useCallback(async (token) => {
+    const response = await fetch(`${url}/packages`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      openSnackBar(error);
+    }
+    let packages = await response.json();
+    setPackages(packages.data);
+    openSnackBar(packages);
+  }, []);
+
   useEffect(async () => {
     setIsLoading(true);
     const token = getUserFromCookie()?.token;
@@ -176,6 +192,7 @@ const Customer = () => {
       setJwtToken(token);
       await fetchCustomer(pid, token);
       await fetchConfig(token);
+      await fetchPackages(token);
     }
     setIsLoading(false);
   }, [pid, fetchCustomer]);
@@ -317,6 +334,22 @@ const Customer = () => {
     setNewMeasurement(measurement);
   };
 
+  const handleContract = (property) => (e) => {
+    console.log("contract changes", [property], e);
+    let contract;
+    if (property === "startDate") {
+      contract = { ...newContract, [property]: e };
+    } else if (property === "package") {
+      const packageId = e.target.value;
+      const packageData = packages.find((item) => item.id === packageId);
+      contract = { ...newContract, ...packageData };
+    } else {
+      contract = { ...newContract, [property]: e.target.value };
+    }
+    console.log(contract, "contract");
+    setNewContract(contract);
+  };
+
   const handleCustomerFormChange = (property) => (e) => {
     const customerData = { ...selectedCustomer, [property]: e.target.value };
     setCustomer(customerData);
@@ -400,6 +433,55 @@ const Customer = () => {
 
   const resetMeasurement = () => {
     setNewMeasurement({});
+  };
+
+  const createContract = async () => {
+    const contractData = newContract;
+    const body = {
+      packageId: contractData.id,
+      startDate: contractData.startDate,
+      endDate: addMonths(contractData.startDate, 3),
+      purchasedDate: new Date().toISOString(),
+      addOnSessions: 0,
+      specialRequest: "",
+      paid: true,
+      paymentMethod: contractData.paymentMethod,
+    };
+
+    console.log(body, "contractData");
+
+    const response = await fetch(`${url}/contracts`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${jwtToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+    if (!response.ok) {
+      let error = await response.json();
+      return error;
+    }
+    let contract = await response.json();
+    // console.log(measurement, "measurement result");
+    return contract.data;
+  };
+
+  const handleNewContract = async () => {
+    setIsLoading(true);
+    // console.log(newMeasurement, "new measurement");
+    const result = await createContract();
+    // console.log(result, "measurement result");
+    // update customer
+    // set customer
+    const body = { contract: result.id };
+    await editCustomer(body);
+    resetContract();
+    setIsLoading(false);
+  };
+
+  const resetContract = () => {
+    setNewContract({});
   };
 
   const resetProgram = () => {
@@ -565,6 +647,11 @@ const Customer = () => {
           measurementData={newMeasurement}
           resetMeasurement={resetMeasurement}
           resetProgram={resetProgram}
+          onSubmitContract={handleNewContract}
+          onContractChange={handleContract}
+          contractData={newContract}
+          resetContract={resetContract}
+          packages={packages}
         />
       </Drawer>
     </div>

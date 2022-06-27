@@ -1,10 +1,11 @@
+import { isWithinInterval } from "date-fns";
 import withAuth from "../auth/withAuth";
 import { useUser } from "../auth/useUser";
 import { getUserFromCookie } from "../auth/userCookie";
 import Drawer from "../components/Drawer";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/router";
-
+import Holidays from "date-holidays";
 import Calendar from "react-calendar";
 import Box from "@mui/material/Box";
 import Stack from "@mui/material/Stack";
@@ -40,23 +41,51 @@ const getBooking = {
   ],
   slots: [
     {
+      start: "07:00",
+      end: "08:00",
+      totalAvailableSlots: 5,
+      totalSlots: 5,
+      customersBooked: [],
+    },
+    {
+      start: "08:00",
+      end: "09:00",
+      totalAvailableSlots: 5,
+      totalSlots: 5,
+      customersBooked: [],
+    },
+    {
       start: "09:00",
       end: "10:00",
-      totalAvailableSlots: 1,
+      totalAvailableSlots: 5,
       totalSlots: 5,
       customersBooked: [],
     },
     {
       start: "10:00",
       end: "11:00",
-      totalAvailableSlots: 2,
+      totalAvailableSlots: 5,
       totalSlots: 5,
       customersBooked: [],
     },
     {
       start: "11:00",
       end: "12:00",
-      totalAvailableSlots: 2,
+      totalAvailableSlots: 5,
+      totalSlots: 5,
+      customersBooked: [],
+    },
+    {
+      start: "17:00",
+      end: "18:00",
+      totalAvailableSlots: 5,
+      totalSlots: 5,
+      customersBooked: [],
+    },
+    {
+      start: "18:00",
+      end: "19:00",
+      totalAvailableSlots: 5,
       totalSlots: 5,
       customersBooked: [],
     },
@@ -75,6 +104,13 @@ const Booking = () => {
   const [snackbarSeverity, setSnackbarSeverity] = useState("");
   const [jwtToken, setJwtToken] = useState();
   const [booking, setBooking] = useState({});
+  const [disabledDate, setDisabledDate] = useState([]);
+
+  useEffect(() => {
+    const hd = new Holidays("SG");
+    console.log(hd.getHolidays(2022));
+    setDisabledDate(hd.getHolidays(2022));
+  }, []);
 
   useEffect(() => {
     const handleRouteChange = (url, { shallow }) => {
@@ -174,6 +210,10 @@ const Booking = () => {
     let data = await response.json();
     openSnackBar(data);
     // console.log(data.data, "booking");
+    data.data.totalSlots = 0;
+    data?.data?.slots.map((slot) => {
+      data.data.totalSlots += Number(slot.totalSlots);
+    });
     setBooking(data.data);
     setLoading(false);
   };
@@ -255,13 +295,51 @@ const Booking = () => {
     setLoading(false);
   };
 
+  const updateBooking = async () => {
+    setLoading(true);
+    const response = await fetch(`${url}/booking`, {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${jwtToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(booking),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      openSnackBar(error);
+    }
+    let data = await response.json();
+    setBooking(data.data);
+    setLoading(false);
+  };
+
   const handleChange = (value, slotIndex, qnIndex) => {
-    // console.log(value, slotIndex, qnIndex);
+    console.log(value, slotIndex, qnIndex);
     const temp = booking;
     const key = temp.slots[slotIndex].questions[qnIndex].key;
-    temp.slots[slotIndex][key] = value;
+    temp.slots[slotIndex][key] = Number(value);
+    temp.slots[slotIndex]["totalAvailableSlots"] =
+      Number(value) - temp.slots[slotIndex]["customersBooked"].length;
     // console.log(temp);
     setBooking({ ...temp });
+  };
+
+  const checkDisabledDate = (activeStartDate, date, view) => {
+    let result = false;
+    disabledDate.map((holidayDate) => {
+      if (
+        isWithinInterval(new Date(date), {
+          start: new Date(holidayDate.start),
+          end: new Date(holidayDate.end),
+        })
+      )
+        result = true;
+    });
+
+    if (date.getDay() === 0) result = true;
+
+    return result;
   };
 
   return (
@@ -327,7 +405,13 @@ const Booking = () => {
               columnGap={5}
               sx={{ width: "100%", paddingBottom: "20px" }}
             >
-              <Calendar onChange={onDateChange} value={date} />
+              <Calendar
+                onChange={onDateChange}
+                value={date}
+                tileDisabled={({ activeStartDate, date, view }) =>
+                  checkDisabledDate(activeStartDate, date, view)
+                }
+              />
               <Box
                 sx={{
                   display: "flex",
@@ -366,6 +450,7 @@ const Booking = () => {
                         handleChange(value, slotIndex, qnIndex)
                       }
                       bookAppointment={() => bookAppointment(slotIndex)}
+                      updateBooking={updateBooking}
                     />
                   );
                 })}

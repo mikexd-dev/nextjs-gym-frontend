@@ -1,4 +1,5 @@
 import * as React from "react";
+import { format, isBefore } from "date-fns";
 import Accordion from "@mui/material/Accordion";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
@@ -15,11 +16,19 @@ export default function AccordionContract({
   options,
   handleChange,
 }) {
+  contracts = contracts.sort(function (a, b) {
+    // Turn your strings into dates, and then subtract them
+    // to get a value that is either negative, positive, or zero.
+    return new Date(b.endDate) - new Date(a.endDate);
+  });
   return (
     <div>
       {contracts &&
         contracts.map((contract, index) => (
-          <Accordion defaultExpanded={true} key={index}>
+          <Accordion
+            defaultExpanded={isBefore(new Date(), new Date(contract.endDate))}
+            key={index}
+          >
             <AccordionSummary
               expandIcon={<ExpandMoreIcon />}
               aria-controls="panel1a-content"
@@ -33,11 +42,20 @@ export default function AccordionContract({
                 }}
               >
                 <Typography sx={{ fontWeight: "bold" }}>
-                  Contract Start Date: [{contract.startDate}]
+                  Contract Date: [{contract.startDate} - {contract.endDate}]
                 </Typography>
-                <Typography sx={{ color: "green", fontWeight: "bold" }}>
+                <Typography
+                  sx={{
+                    color: isBefore(new Date(), new Date(contract.endDate))
+                      ? "green"
+                      : "red",
+                    fontWeight: "bold",
+                  }}
+                >
                   {" "}
-                  Active
+                  {isBefore(new Date(), new Date(contract.endDate))
+                    ? "Active"
+                    : "InActive"}
                 </Typography>
               </Box>
             </AccordionSummary>

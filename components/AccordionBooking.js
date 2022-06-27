@@ -15,6 +15,7 @@ export default function SimpleAccordion({
   bookAppointment,
   handleChange,
   activeCustomers,
+  updateBooking,
 }) {
   return (
     <div>
@@ -147,6 +148,20 @@ export default function SimpleAccordion({
                 </Box>
               );
             })}
+            <Box
+              style={{
+                display: "flex",
+                flexDirection: "row",
+                justifyContent: "center",
+                columnGap: 10,
+                alignItems: "center",
+                padding: "0px 20px",
+              }}
+            >
+              <Button variant="outlined" onClick={updateBooking}>
+                Update Booking Slots
+              </Button>
+            </Box>
           </Box>
           {/* ); */}
           {/* })} */}

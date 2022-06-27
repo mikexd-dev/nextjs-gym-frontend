@@ -19,6 +19,7 @@ import AccordionContract from "./AccordionContract";
 import AccordionProgram from "./AccordionProgram";
 import ProgramCreation from "./ProgramCreation";
 import MeasurementCreation from "./MeasurementCreation";
+import ContractCreation from "./ContractCreation";
 // import TrainerForm from "./TrainerForm";
 
 export default function TrainerDrawer({
@@ -41,12 +42,18 @@ export default function TrainerDrawer({
   measurementData,
   resetMeasurement,
   resetProgram,
+  onSubmitContract,
+  onContractChange,
+  contractData,
+  resetContract,
+  packages,
 }) {
   // console.log(formData, "formdata");
   const [value, setValue] = useState("1");
   const [exercises, setExercises] = useState([]);
   const [programDrawer, setProgramDrawer] = useState(false);
   const [measurementDrawer, setMeasurementDrawer] = useState(false);
+  const [contractDrawer, setContractDrawer] = useState(false);
 
   const bookingColumns = [
     { field: "id", headerName: "Index", width: 70 },
@@ -143,6 +150,18 @@ export default function TrainerDrawer({
     resetMeasurement();
   };
 
+  const toggleContractDrawer = () => (event) => {
+    if (
+      event.type === "keydown" &&
+      (event.key === "Tab" || event.key === "Shift")
+    ) {
+      return;
+    }
+    // console.log("closed?", measurementDrawer);
+    setContractDrawer(!contractDrawer);
+    resetContract();
+  };
+
   const onSubmitProgram = async (data) => {
     // console.log("helloooo closed");
     const result = await onCreateProgram(data);
@@ -155,6 +174,13 @@ export default function TrainerDrawer({
     const result = await onSubmitMeasurement(data);
     // console.log(result, "submitted");
     setMeasurementDrawer(false);
+  };
+
+  const submitContract = async (data) => {
+    // console.log("helloooo closed");
+    const result = await onSubmitContract(data);
+    // console.log(result, "submitted");
+    setContractDrawer(false);
   };
 
   return (
@@ -184,6 +210,19 @@ export default function TrainerDrawer({
           closeMeasurementDrawer={toggleMeasurementDrawer}
           onChange={onMeasurementChange}
           data={measurementData}
+        />
+      </Drawer>
+      <Drawer
+        anchor={"bottom"}
+        open={contractDrawer}
+        onClose={toggleContractDrawer()}
+      >
+        <ContractCreation
+          submitResult={submitContract}
+          closeContractDrawer={toggleContractDrawer}
+          onChange={onContractChange}
+          data={contractData}
+          packages={packages}
         />
       </Drawer>
       <Box
@@ -293,18 +332,56 @@ export default function TrainerDrawer({
               />
             </TabPanel>
             <TabPanel value="4">
+              <Typography
+                variant="h5"
+                gutterBottom
+                sx={{
+                  fontWeight: "bold",
+                }}
+              >
+                Bookings
+              </Typography>
               <BookingsTable
                 bookings={formData.bookings}
                 columns={bookingColumns}
               />
             </TabPanel>
             <TabPanel value="5">
+              <Typography
+                variant="h5"
+                gutterBottom
+                sx={{
+                  fontWeight: "bold",
+                }}
+              >
+                Sessions
+              </Typography>
               <BookingsTable
                 bookings={formData.sessions}
                 columns={sessionColumns}
               />
             </TabPanel>
             <TabPanel value="6">
+              <Stack
+                direction="row"
+                spacing={20}
+                justifyContent="space-between"
+                alignItems="center"
+                sx={{ width: "100%", paddingBottom: "20px" }}
+              >
+                <Typography
+                  variant="h5"
+                  gutterBottom
+                  sx={{
+                    fontWeight: "bold",
+                  }}
+                >
+                  Contracts
+                </Typography>
+                <Button variant="contained" onClick={toggleContractDrawer()}>
+                  New Contract
+                </Button>
+              </Stack>
               <AccordionContract
                 contracts={formData.contract}
                 sessionsLeft={formData.sessionsLeft}

@@ -18,7 +18,7 @@ export default function MaterialUIPickers({
         {type === "date-picker" && (
           <DesktopDatePicker
             label={label}
-            inputFormat="MM/dd/yyyy"
+            inputFormat="dd/MM/yyyy"
             value={value}
             onChange={(newValue) => {
               handleChange(newValue);
